@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+
+<head>
+    <script>
+        /* 整合版：APP 主窗口默认打开「美好生活记录」首页；
+           当以 ?embed=1 内嵌（life.html 中的 iframe）访问时，正常加载 HRT Tracker 本体 */
+        if (location.search.indexOf('embed=1') === -1) {
+            location.replace('./life.html');
+        }
+    </script>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" href="/pwa-192x192.png">
+    <title>HRT Tracker</title>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+</body>
+
+</html>

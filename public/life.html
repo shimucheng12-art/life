@@ -1,0 +1,2258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#1c1a19">
+    <title>美好生活记录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+        }
+        body {
+            background-color: #f5f7fa;
+            color: #3a332d;
+            line-height: 1.7;
+        }
+        /* ===== 顶部导航 ===== */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 22px;
+            background-color: #1c1a19;
+            color: #f0e6d6;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 500;
+        }
+        .nav-logo-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.12);
+            display: grid;
+            place-items: center;
+            color: #d4b078;
+        }
+        .nav-btn {
+            padding: 9px 20px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.22);
+            color: #f0e6d6;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        /* ===== 首屏海报 ===== */
+        .hero-banner {
+            background: linear-gradient(180deg, #1c1a19 0%, #2a2420 100%);
+            color: #e9d9c6;
+            padding: 50px 24px 60px;
+            text-align: center;
+        }
+        .hero-title {
+            font-size: clamp(36px, 8vw, 58px);
+            font-weight: bold;
+            margin-bottom: 18px;
+            line-height: 1.2;
+            color: #d4b078;
+        }
+        .hero-desc {
+            font-size: 17px;
+            opacity: 0.85;
+            margin-bottom: 36px;
+            line-height: 1.9;
+        }
+        .hero-btns {
+            display: flex;
+            gap: 18px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #d4b078, #b8925c);
+            color: #1a1612;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 999px;
+            font-size: 17px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        .btn-primary:hover {
+            filter: brightness(1.08);
+        }
+        .btn-outline {
+            border: 1px solid #d4b078;
+            background: transparent;
+            color: #d4b078;
+            padding: 14px 32px;
+            border-radius: 999px;
+            font-size: 17px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-outline:hover {
+            background: rgba(212, 176, 120, 0.1);
+        }
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 999px;
+            border: none;
+            background: #fff0f3;
+            color: #d9466f;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        /* ===== 功能标签栏 ===== */
+        .tab-bar {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 22px 16px;
+            background: #fff;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #eef0f4;
+        }
+        .tab-item {
+            padding: 10px 24px;
+            background: #f5f7fa;
+            border-radius: 999px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #6b7280;
+        }
+        .tab-item.active {
+            background: #d9466f;
+            color: #fff;
+        }
+        /* ===== 内容容器 ===== */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 30px 20px 60px;
+        }
+        .section-title {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #1f2937;
+        }
+        .tip-text {
+            font-size: 18px;
+            color: #9ca3af;
+            text-align: center;
+            margin: 40px 0;
+            padding: 0 12px;
+        }
+        /* ===== 卡片通用 ===== */
+        .card {
+            background: #fff;
+            border-radius: 24px;
+            padding: 26px;
+            margin-bottom: 22px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            border: 1px solid #f0f2f5;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 15px;
+            color: #4b5563;
+        }
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            font-size: 16px;
+            background: #fafafa;
+            outline: none;
+            margin-bottom: 18px;
+        }
+        .form-input:focus, .form-select:focus {
+            border-color: #d9466f;
+            box-shadow: 0 0 0 3px rgba(217, 70, 111, 0.12);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        /* ===== 小确幸模块样式 ===== */
+        .mood-selector {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+        .mood-tag {
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: #f5f7fa;
+            color: #6b7280;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid transparent;
+        }
+        .mood-tag.active {
+            background: #fff0f3;
+            color: #d9466f;
+            border-color: #f8c8d4;
+        }
+        .image-upload-area {
+            border: 2px dashed #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 18px;
+            cursor: pointer;
+            transition: 0.2s;
+            background: #fafafa;
+        }
+        .image-upload-area:hover {
+            border-color: #d9466f;
+            background: #fff7f9;
+        }
+        .image-upload-area input {
+            display: none;
+        }
+        .image-preview-wrap {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .image-preview-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .image-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .image-preview-del {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 22px;
+            text-align: center;
+            padding: 0;
+        }
+        /* 列表筛选栏 */
+        .record-filter {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            padding: 14px;
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid #f0f2f5;
+        }
+        .filter-tag {
+            padding: 6px 16px;
+            border-radius: 999px;
+            background: #f5f7fa;
+            color: #6b7280;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .filter-tag.active {
+            background: #d9466f;
+            color: #fff;
+        }
+        /* 记录卡片图片 */
+        .record-images {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-top: 10px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .record-images img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        .record-meta {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .record-mood {
+            font-size: 12px;
+            background: #fff7ed;
+            color: #c2680c;
+            padding: 2px 8px;
+            border-radius: 999px;
+        }
+        .record-category {
+            font-size: 12px;
+            background: #f0f9ff;
+            color: #0369a1;
+            padding: 2px 8px;
+            border-radius: 999px;
+        }
+        /* 大图查看弹窗 */
+        .image-viewer-mask {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .image-viewer-mask img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 12px;
+        }
+        .image-viewer-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        /* ===== 照片记录 ===== */
+        .record-item {
+            display: flex;
+            gap: 16px;
+            padding: 18px;
+            background: #fff;
+            border-radius: 16px;
+            margin-bottom: 14px;
+            border: 1px solid #f0f2f5;
+            align-items: flex-start;
+        }
+        .record-text {
+            flex: 1;
+            font-size: 16px;
+            line-height: 1.7;
+            min-width: 0;
+        }
+        .record-time {
+            font-size: 13px;
+            color: #9ca3af;
+            margin-top: 6px;
+        }
+        /* ===== 树洞模块样式 ===== */
+        .treehole-mood-tag.active {
+            background: #eef2f7;
+            color: #4b5563;
+            border-color: #d1d5db;
+        }
+        .treehole-item {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+        }
+        .treehole-mood {
+            background: #f3f4f6;
+            color: #4b5563;
+        }
+        .treehole-category {
+            font-size: 12px;
+            background: #eef2f7;
+            color: #4b5563;
+            padding: 2px 8px;
+            border-radius: 999px;
+        }
+        /* ===== 倒数日 ===== */
+        .countdown-card {
+            background: #fff8ef;
+            padding: 22px 24px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #ffeedd;
+        }
+        .countdown-name {
+            font-size: 18px;
+            color: #92400e;
+        }
+        .countdown-num {
+            font-size: 38px;
+            font-weight: bold;
+            color: #d97706;
+        }
+        .countdown-unit {
+            font-size: 14px;
+            color: #c29478;
+            margin-left: 4px;
+        }
+        /* ===== 小六壬 ===== */
+        .liuren-box {
+            background: #fff9f0;
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid #ffeedd;
+        }
+        .result-box {
+            margin-top: 26px;
+            padding: 24px;
+            background: #fff;
+            border-radius: 16px;
+        }
+        .result-name {
+            text-align: center;
+            font-size: 42px;
+            font-weight: bold;
+            color: #d97706;
+            margin-bottom: 12px;
+        }
+        .result-desc {
+            text-align: center;
+            font-size: 17px;
+            color: #78350f;
+            margin-bottom: 20px;
+        }
+        .result-detail {
+            margin-top: 20px;
+            padding: 18px;
+            background: #fffbeb;
+            border-radius: 12px;
+            text-align: left;
+        }
+        .result-detail-title {
+            font-weight: 500;
+            color: #92400e;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+        .result-detail-text {
+            font-size: 14px;
+            color: #78350f;
+            line-height: 1.8;
+        }
+        .science-tip {
+            text-align: center;
+            color: #a16207;
+            margin-top: 22px;
+            font-size: 14px;
+        }
+        /* ===== 周公解梦 ===== */
+        .dream-search-box {
+            background: #fff;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            border: 1px solid #f0f2f5;
+        }
+        .dream-hot-tags {
+            margin-top: 12px;
+            font-size: 13px;
+            color: #9ca3af;
+        }
+        .dream-hot-tags span {
+            color: #d9466f;
+            cursor: pointer;
+            margin: 0 6px;
+        }
+        .dream-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 14px;
+        }
+        .dream-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 18px;
+            border: 1px solid #f0f2f5;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+        }
+        .dream-card-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .dream-name {
+            font-size: 17px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .dream-level {
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .dream-level.吉 { background: #ecfdf5; color: #059669; }
+        .dream-level.平 { background: #fffbeb; color: #d97706; }
+        .dream-level.凶 { background: #fef2f2; color: #dc2626; }
+        .dream-desc {
+            font-size: 14px;
+            color: #4b5563;
+            line-height: 1.7;
+        }
+        /* 中医解读卡片 */
+        .tcm-card {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+        .tcm-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #166534;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tcm-content {
+            font-size: 14px;
+            color: #14532d;
+            line-height: 1.8;
+        }
+        .tcm-content p {
+            margin-bottom: 8px;
+        }
+        .tcm-content p:last-child {
+            margin-bottom: 0;
+        }
+        .dream-result-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 20px 0 12px;
+        }
+        /* ===== 设置/备份 ===== */
+        .backup-card {
+            margin-bottom: 20px;
+        }
+        .backup-desc {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 18px;
+            line-height: 1.8;
+        }
+        .backup-btns {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .backup-btns button {
+            flex: 1;
+            min-width: 140px;
+        }
+        /* ===== 弹窗 ===== */
+        .mask {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            padding: 20px;
+        }
+        .popup {
+            background: #fff;
+            border-radius: 22px;
+            width: 100%;
+            max-width: 420px;
+            padding: 32px 28px;
+        }
+        .popup h3 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 24px;
+            color: #1f2937;
+        }
+        .popup-btns {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .popup-btns button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .btn-confirm {
+            background: #d9466f;
+            color: #fff;
+        }
+        .btn-cancel {
+            background: #f3f4f6;
+            color: #4b5563;
+        }
+        .switch-text {
+            text-align: center;
+            margin-top: 18px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .switch-text span {
+            color: #d9466f;
+            cursor: pointer;
+        }
+        /* ===== 工具类 ===== */
+        .page { display: none; }
+        .page.active { display: block; }
+        .hidden { display: none !important; }
+        /* ===== 删除/编辑按钮 ===== */
+        .btn-del {
+            padding: 5px 14px;
+            font-size: 13px;
+            border-radius: 999px;
+            border: none;
+            background: #fff0f3;
+            color: #e11d48;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: 0.2s;
+        }
+        .btn-del:hover { background: #ffe0e7; }
+        .btn-mini {
+            padding: 5px 14px;
+            font-size: 13px;
+            border-radius: 999px;
+            border: none;
+            background: #f3f4f6;
+            color: #6b7280;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-mini:hover { background: #e9ebf0; }
+        textarea.form-input {
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+            line-height: 1.8;
+        }
+        /* ===== 日记 ===== */
+        .diary-item {
+            background: #fff;
+            border-radius: 18px;
+            border: 1px solid #f0f2f5;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .diary-head { display: flex; gap: 16px; }
+        .diary-date {
+            flex-shrink: 0;
+            width: 76px;
+            background: #fdf2f6;
+            border-radius: 14px;
+            padding: 10px 6px;
+            text-align: center;
+            height: fit-content;
+        }
+        .diary-date-day {
+            display: block;
+            font-size: 20px;
+            font-weight: 600;
+            color: #d9466f;
+        }
+        .diary-date-week {
+            display: block;
+            font-size: 12px;
+            color: #c4899c;
+            margin-top: 2px;
+        }
+        .diary-body { flex: 1; min-width: 0; }
+        .diary-title-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+        .diary-mood {
+            font-size: 13px;
+            background: #fff7ed;
+            color: #c2680c;
+            padding: 3px 10px;
+            border-radius: 999px;
+            border: 1px solid #ffedd5;
+        }
+        .diary-title { font-size: 17px; font-weight: 600; color: #1f2937; }
+        .diary-content {
+            font-size: 15px;
+            color: #4b5563;
+            white-space: pre-wrap;
+            word-break: break-word;
+            line-height: 1.8;
+        }
+        .diary-foot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-top: 12px;
+            font-size: 12px;
+            color: #9ca3af;
+            flex-wrap: wrap;
+        }
+        .diary-ops { display: flex; gap: 8px; }
+        /* ===== 移动端适配 ===== */
+        @media (max-width: 900px) {
+            .dream-list { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 640px) {
+            .hero-title { font-size: 36px; }
+            .hero-desc { font-size: 15px; }
+            .countdown-num { font-size: 30px; }
+            .backup-btns { flex-direction: column; }
+            .form-row { grid-template-columns: 1fr; }
+            .dream-list { grid-template-columns: 1fr; }
+            .image-preview-wrap { grid-template-columns: repeat(3, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <div class="top-nav">
+        <div class="nav-logo">
+            <div class="nav-logo-icon">✦</div>
+            <span>美好生活</span>
+        </div>
+        <button class="nav-btn" id="userBtn" onclick="userBtnClick()">登录</button>
+    </div>
+    <!-- 首屏海报 -->
+    <div class="hero-banner">
+        <div class="hero-title">把平凡的日子，<br>认真收藏。</div>
+        <div class="hero-desc" id="heroDesc">
+            生活不只是眼前的风景，<br>
+            还有那些值得细细品味的瞬间。<br>
+            愿你在忙碌的世界里，依然能遇见生活的温柔。
+        </div>
+        <div class="hero-btns">
+            <button class="btn-primary" onclick="switchTab('photo')">记录小确幸 →</button>
+            <button class="btn-outline" onclick="switchTab('list')">查看小确幸 ↓</button>
+        </div>
+    </div>
+    <!-- 功能标签栏 -->
+    <div class="tab-bar">
+        <div class="tab-item active" data-tab="home" onclick="switchTab('home')">首页</div>
+        <div class="tab-item" data-tab="photo" onclick="switchTab('photo')">小确幸</div>
+        <div class="tab-item" data-tab="treehole" onclick="switchTab('treehole')">树洞</div>
+        <div class="tab-item" data-tab="diary" onclick="switchTab('diary')">日记</div>
+        <div class="tab-item" data-tab="countdown" onclick="switchTab('countdown')">倒数日</div>
+        <div class="tab-item" data-tab="hrt" onclick="switchTab('hrt')">HRT记录</div>
+        <div class="tab-item" data-tab="liuren" onclick="switchTab('liuren')">小六壬</div>
+        <div class="tab-item" data-tab="dream" onclick="switchTab('dream')">解梦</div>
+        <div class="tab-item" data-tab="settings" onclick="switchTab('settings')">设置</div>
+    </div>
+    <div class="container">
+        <!-- 首页 -->
+        <div class="page active" id="page-home">
+            <div class="tip-text">
+                为每一张照片配上一句心里话，把平凡日子里的温柔都好好收着。
+            </div>
+        </div>
+        <!-- 小确幸记录页面 -->
+        <div class="page" id="page-photo">
+            <div class="card">
+                <h3 class="section-title" style="font-size:22px; margin-bottom:18px;">✨ 记录小确幸</h3>
+                
+                <label class="form-label">今日心情</label>
+                <div class="mood-selector" id="moodSelector">
+                    <div class="mood-tag active" data-mood="😊 开心" onclick="selectMood(this)">😊 开心</div>
+                    <div class="mood-tag" data-mood="🌤 平静" onclick="selectMood(this)">🌤 平静</div>
+                    <div class="mood-tag" data-mood="🥰 幸福" onclick="selectMood(this)">🥰 幸福</div>
+                    <div class="mood-tag" data-mood="😋 满足" onclick="selectMood(this)">😋 满足</div>
+                    <div class="mood-tag" data-mood="😌 治愈" onclick="selectMood(this)">😌 治愈</div>
+                    <div class="mood-tag" data-mood="🎉 惊喜" onclick="selectMood(this)">🎉 惊喜</div>
+                </div>
+
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">图集分类</label>
+                        <input class="form-input" placeholder="如：美食、旅行、日常" id="recordCategory" list="categoryList">
+                        <datalist id="categoryList"></datalist>
+                    </div>
+                </div>
+
+                <label class="form-label">记录内容</label>
+                <textarea class="form-input" placeholder="写下这件小事的美好……" id="recordInput" rows="3"></textarea>
+
+                <label class="form-label">添加图片</label>
+                <div class="image-upload-area" onclick="document.getElementById('recordImageInput').click()">
+                    <div style="font-size: 28px; margin-bottom: 8px;">📷</div>
+                    <div style="color: #6b7280; font-size: 14px;">点击上传图片（可多选）</div>
+                    <input type="file" id="recordImageInput" accept="image/*" multiple onchange="handleImageSelect(event)">
+                </div>
+                <div class="image-preview-wrap" id="imagePreviewWrap"></div>
+
+                <button class="btn-primary" style="width:100%;" onclick="saveRecord()">保存小确幸</button>
+            </div>
+        </div>
+        <!-- 小确幸列表 -->
+        <div class="page" id="page-list">
+            <h3 class="section-title">我的小确幸</h3>
+            <div class="record-filter" id="recordFilter">
+                <div class="filter-tag active" data-cat="all" onclick="filterRecords('all', this)">全部</div>
+            </div>
+            <div id="recordList"></div>
+        </div>
+        <!-- 树洞页面 -->
+        <div class="page" id="page-treehole">
+            <div class="card">
+                <h3 class="section-title" style="font-size:22px; margin-bottom:18px;">🌧 树洞 · 把坏心情倒在这里</h3>
+                
+                <label class="form-label">此刻心情</label>
+                <div class="mood-selector" id="treeholeMoodSelector">
+                    <div class="mood-tag treehole-mood-tag active" data-mood="😢 难过" onclick="selectTreeholeMood(this)">😢 难过</div>
+                    <div class="mood-tag treehole-mood-tag" data-mood="😡 烦躁" onclick="selectTreeholeMood(this)">😡 烦躁</div>
+                    <div class="mood-tag treehole-mood-tag" data-mood="😫 疲惫" onclick="selectTreeholeMood(this)">😫 疲惫</div>
+                    <div class="mood-tag treehole-mood-tag" data-mood="😞 委屈" onclick="selectTreeholeMood(this)">😞 委屈</div>
+                    <div class="mood-tag treehole-mood-tag" data-mood="😔 失落" onclick="selectTreeholeMood(this)">😔 失落</div>
+                    <div class="mood-tag treehole-mood-tag" data-mood="😠 生气" onclick="selectTreeholeMood(this)">😠 生气</div>
+                </div>
+
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">图集分类</label>
+                        <input class="form-input" placeholder="如：吐槽、emo、日常" id="treeholeCategory" list="treeholeCategoryList">
+                        <datalist id="treeholeCategoryList"></datalist>
+                    </div>
+                </div>
+
+                <label class="form-label">想说的话</label>
+                <textarea class="form-input" placeholder="不开心、烦心事、吐槽……都可以写在这里，没人会知道" id="treeholeInput" rows="3"></textarea>
+
+                <label class="form-label">添加图片</label>
+                <div class="image-upload-area" onclick="document.getElementById('treeholeImageInput').click()">
+                    <div style="font-size: 28px; margin-bottom: 8px;">📷</div>
+                    <div style="color: #6b7280; font-size: 14px;">点击上传图片（可多选）</div>
+                    <input type="file" id="treeholeImageInput" accept="image/*" multiple onchange="handleTreeholeImageSelect(event)">
+                </div>
+                <div class="image-preview-wrap" id="treeholeImagePreviewWrap"></div>
+
+                <button class="btn-primary" style="width:100%; background: linear-gradient(135deg, #6b7280, #4b5563);" onclick="saveTreehole()">投入树洞</button>
+            </div>
+
+            <h3 class="section-title" style="margin-top:30px;">我的树洞 <span style="font-size:15px; color:#9ca3af; font-weight:400;"></span></h3>
+            <div class="record-filter" id="treeholeFilter">
+                <div class="filter-tag active" data-cat="all" onclick="filterTreeholes('all', this)">全部</div>
+            </div>
+            <div id="treeholeList"></div>
+        </div>
+        <!-- 日记 -->
+        <div class="page" id="page-diary">
+            <div class="card">
+                <h3 class="section-title" style="font-size:22px; margin-bottom:18px;">📖 写日记</h3>
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">日记日期</label>
+                        <input class="form-input" type="date" id="diaryDate">
+                    </div>
+                    <div>
+                        <label class="form-label">今日心情</label>
+                        <select class="form-select" id="diaryMood">
+                            <option value="😊 开心">😊 开心</option>
+                            <option value="🌤 平静" selected>🌤 平静</option>
+                            <option value="🥰 幸福">🥰 幸福</option>
+                            <option value="😢 难过">😢 难过</option>
+                            <option value="😫 疲惫">😫 疲惫</option>
+                            <option value="😡 烦躁">😡 烦躁</option>
+                        </select>
+                    </div>
+                </div>
+                <label class="form-label">标题（可选）</label>
+                <input class="form-input" placeholder="给今天起个名字……" id="diaryTitle">
+                <label class="form-label">日记内容</label>
+                <textarea class="form-input" id="diaryContent" rows="6" placeholder="今天的心情、遇到的事、想说的话……都可以写在这里"></textarea>
+                <div style="display:flex; gap:12px;">
+                    <button class="btn-primary" style="flex:1;" id="diarySubmitBtn" onclick="saveDiary()">保存日记</button>
+                    <button class="btn-cancel hidden" id="diaryCancelBtn" style="padding:12px 26px; border-radius:999px; border:none; cursor:pointer; font-size:16px;" onclick="cancelDiaryEdit()">取消编辑</button>
+                </div>
+            </div>
+            <h3 class="section-title" style="margin-top:30px;">我的日记 <span id="diaryCount" style="font-size:15px; color:#9ca3af; font-weight:400;"></span></h3>
+            <div id="diaryList"></div>
+        </div>
+        <!-- 倒数日 -->
+        <div class="page" id="page-countdown">
+            <div class="card">
+                <h3 class="section-title" style="font-size:22px; margin-bottom:18px;">添加倒数日</h3>
+                <label class="form-label">事件名称</label>
+                <input class="form-input" placeholder="例如：见面的日子" id="cdName">
+                <label class="form-label">目标日期</label>
+                <input class="form-input" type="date" id="cdDate">
+                <button class="btn-primary" style="width:100%;" onclick="addCountdown()">添加</button>
+            </div>
+            <h3 class="section-title" style="margin-top:30px;">我的倒数日</h3>
+            <div id="cdList"></div>
+        </div>
+        <!-- HRT 跳转入口 -->
+        <div class="page" id="page-hrt">
+            <div class="card" style="text-align:center; padding:40px 30px;">
+                <h3 class="section-title" style="margin-bottom:12px;">HRT 用药记录</h3>
+                <p style="color:#6b7280; margin-bottom:28px; line-height:1.8;">
+                    已内置完整的 HRT Tracker 工具<br>
+                    包含更精准的浓度估算、校准与数据管理功能，无需联网
+                </p>
+                <button class="btn-primary" onclick="openHrt()">
+                    打开 HRT 记录工具 →
+                </button>
+                <p style="margin-top:14px; font-size:12px; color:#9ca3af;">
+                    <a href="https://mtf-hrt-03.netlify.app/" target="_blank" rel="noopener" style="color:#9ca3af; text-decoration:underline;">在线版</a>
+                    · 数据保存在本机，两个应用互不影响
+                </p>
+            </div>
+        </div>
+        <!-- 小六壬 -->
+        <div class="page" id="page-liuren">
+            <div class="liuren-box">
+                <h3 style="text-align:center; font-size:24px; margin-bottom:20px;">小六壬起卦</h3>
+                <label class="form-label">心中所想（选填，越具体解读越精准）</label>
+                <input class="form-input" placeholder="写下你想问的事，如：手术顺利吗、丢的钥匙能找到吗……" id="lrQuestion">
+                <button class="btn-primary" style="width:100%;" onclick="startLiuRen()">正时起卦</button>
+                <div class="result-box" id="lrResult">
+                    <p style="text-align:center; color:#999;">点击上方按钮，以当下时空起卦</p>
+                </div>
+                <div class="science-tip">⚠️ 仅供民俗娱乐，相信科学，理性看待</div>
+            </div>
+        </div>
+        <!-- 周公解梦 -->
+        <div class="page" id="page-dream">
+            <div class="dream-search-box">
+                <label class="form-label">描述你的梦境</label>
+                <input class="form-input" placeholder="例如：梦见被黑蛇追、掉牙、飞起来了……" id="dreamSearch" onkeydown="if(event.key==='Enter')searchDream()">
+                <button class="btn-primary" style="width:100%;" onclick="searchDream()">开始解梦</button>
+                <div class="dream-hot-tags">
+                    试试：
+                    <span onclick="searchDreamTag('蛇')">蛇</span>
+                    <span onclick="searchDreamTag('掉牙')">掉牙</span>
+                    <span onclick="searchDreamTag('结婚')">结婚</span>
+                    <span onclick="searchDreamTag('怀孕')">怀孕</span>
+                    <span onclick="searchDreamTag('死人')">死人</span>
+                    <span onclick="searchDreamTag('飞')">飞起来</span>
+                </div>
+            </div>
+            <div id="dreamResult"></div>
+        </div>
+        <!-- 设置与备份 -->
+        <div class="page" id="page-settings">
+            <div class="card backup-card">
+                <h3 class="section-title" style="font-size:22px; margin-bottom:10px;">数据备份与恢复</h3>
+                <div class="backup-desc">
+                    导出当前账号的所有记录、倒数日、日记数据为 JSON 文件，保存到本地；<br>
+                    更换设备或清理浏览器后，可导入文件恢复数据。<br>
+                    <span style="color:#d9466f;">建议定期备份，避免数据丢失。</span>
+                </div>
+                <div class="backup-btns">
+                    <button class="btn-primary" onclick="exportBackup()">导出备份文件</button>
+                    <button class="btn-outline" onclick="importBackup()">导入备份文件</button>
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="section-title" style="font-size:22px; margin-bottom:10px;">关于</h3>
+                <div class="backup-desc" style="margin-bottom:0;">
+                    美好生活记录 · 本地版<br>
+                    所有数据仅保存在你的浏览器中，不会上传到任何服务器。<br><br>
+                    <span style="color:#999; font-size:13px;">HRT 记录功能已跳转至独立工具站点；解梦、小六壬仅供民俗娱乐。</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 登录弹窗 -->
+    <div class="mask hidden" id="loginMask">
+        <div class="popup">
+            <h3>账号登录</h3>
+            <label class="form-label">用户名</label>
+            <input class="form-input" placeholder="请输入用户名" id="loginUser">
+            <label class="form-label">密码</label>
+            <input class="form-input" type="password" placeholder="请输入密码" id="loginPwd">
+            <div class="popup-btns">
+                <button class="btn-cancel" onclick="closeLogin()">取消</button>
+                <button class="btn-confirm" onclick="doLogin()">登录</button>
+            </div>
+            <div class="switch-text">
+                还没有账号？<span onclick="showRegister()">立即注册</span>
+            </div>
+        </div>
+    </div>
+    <!-- 注册弹窗 -->
+    <div class="mask hidden" id="regMask">
+        <div class="popup">
+            <h3>注册账号</h3>
+            <label class="form-label">设置用户名</label>
+            <input class="form-input" placeholder="给自己起个名字" id="regUser">
+            <label class="form-label">设置密码</label>
+            <input class="form-input" type="password" placeholder="至少6位" id="regPwd">
+            <label class="form-label">确认密码</label>
+            <input class="form-input" type="password" placeholder="再次输入密码" id="regPwd2">
+            <div class="popup-btns">
+                <button class="btn-cancel" onclick="closeRegister()">取消</button>
+                <button class="btn-confirm" onclick="doRegister()">注册</button>
+            </div>
+        </div>
+    </div>
+<script>
+// ========== 首页随机文案 ==========
+const heroTexts = [
+    "生活不只是眼前的风景，<br>还有那些值得细细品味的瞬间。<br>愿你在忙碌的世界里，依然能遇见生活的温柔。",
+    "光阴不动声色地流淌，却在某个转角留下微光。<br>愿你在匆匆人海里，仍肯为一片晚霞驻足。",
+    "时间是一条静静的河，美好是河底闪烁的碎金。<br>愿你在奔忙的岸上，仍愿俯身拾起。",
+    "平凡的日子像夜空，细看才知缀满星辰。<br>愿你在人间烟火中，拾得属于自己的那束光。",
+    "草木有本心，日子亦有回甘。<br>愿你在喧嚣之外，采撷那些散落人间的温柔。",
+    "风会记得一朵花的香，岁月也会记得你的欢喜。<br>愿你在漫长旅途中，常有微光落进眼里。",
+    "春有百花秋有月，四时轮转皆成诗。<br>愿你在朝夕流转间，收藏每一寸光阴的馈赠。",
+    "把日子写成一封长信，寄给未来的自己。<br>愿你在时光深处，与所有温柔不期而遇。",
+    "生活如茶，初尝清淡，回味悠长。<br>愿你在氤氲烟火里，品出属于自己的那份甘甜。",
+    "万物皆有细缝，光便从中漏下来。<br>愿你于琐碎日常里，接住每一缕照进生活的光。"
+];
+
+function randomHeroText() {
+    const idx = Math.floor(Math.random() * heroTexts.length);
+    document.getElementById('heroDesc').innerHTML = heroTexts[idx];
+}
+
+// ========== 工具函数 ==========
+function esc(s) {
+    return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+function pad2(n) { return String(n).padStart(2, '0'); }
+function getKey(name) {
+    return name + '_' + (currentUser || 'guest');
+}
+function loadJSON(name, def) {
+    try {
+        const v = JSON.parse(localStorage.getItem(getKey(name)));
+        if (Array.isArray(def)) return Array.isArray(v) ? v : def;
+        return v || def;
+    } catch (e) { return def; }
+}
+function saveJSON(name, val) {
+    localStorage.setItem(getKey(name), JSON.stringify(val));
+}
+function fmtDT(iso) {
+    const d = new Date(iso);
+    if (isNaN(d)) return '--';
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+}
+const weekNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+function weekdayOf(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    return isNaN(d) ? '' : weekNames[d.getDay()];
+}
+function todayStr() {
+    const d = new Date();
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+}
+function show(id) { document.getElementById(id).classList.remove('hidden'); }
+function hide(id) { document.getElementById(id).classList.add('hidden'); }
+// ========== 全局变量 ==========
+let currentUser = localStorage.getItem("curUser") || null;
+let records = [];
+let treeholes = [];
+let countdowns = [];
+let diaries = [];
+let editingDiaryId = null;
+let selectedMood = '😊 开心';
+let selectedTreeholeMood = '😢 难过';
+let tempImages = [];
+let tempTreeholeImages = [];
+let currentRecordFilter = 'all';
+let currentTreeholeFilter = 'all';
+// ========== 小六壬传统命理数据 ==========
+const guaData = [
+    {
+        name: "大安",
+        desc: "大安事事昌，求谋在东方，失物去不远，宅舍保平安。",
+        general: "整体运势平稳向上，凡事宜稳步推进，不宜急躁冒进。守旧则吉，动则耗神，耐心等待自有好结果。",
+        career: "事业财运：工作事业平稳发展，宜守成不宜扩张，正财收入稳定，偏财机会一般。投资建议以稳健为主，适合长期布局，短期难有大额收益。贵人在东方，遇事可向年长之人请教。",
+        love: "感情姻缘：感情安稳顺遂，单身者易遇稳重可靠的正缘，发展节奏平缓但长久。有伴者关系和睦，矛盾较少，适合谈婚论嫁、共同规划未来。",
+        study: "学业考试：学业基础扎实，学习状态稳定，考试能正常发挥水平。只要踏实复习、循序渐进，就能取得不错的成绩，不宜投机取巧。",
+        travel: "出行办事：出行平安顺利，无意外波折，办事能按计划达成。适合拜访客户、洽谈合作，一路顺畅，易得贵人相助。",
+        health: "健康疾病：身体整体康健，无重大病痛，旧疾也会逐渐好转。手术预后良好，伤口恢复平稳，注意肝胆方面保养，规律作息，避免过度劳累与熬夜。",
+        lawsuit: "官司是非：官司平稳无大碍，纠纷易和解，法律事务进展顺利。合同协议无隐患，维权能得到公正结果，适合协商调解。",
+        lost: "失物找寻：失物去不远，就在家中或常去之处，未被人拿走。仔细在原地、抽屉、缝隙处寻找，很快便能找到，无需着急。",
+        family: "家庭人际：家庭和睦，家人平安健康，无病无灾。人际关系融洽，朋友同事相处和谐，适合走亲访友、增进感情。"
+    },
+    {
+        name: "留连",
+        desc: "留连事难成，求谋日未明，官事只宜缓，去者未回程。",
+        general: "整体运势阻滞拖延，事情进展缓慢，易有反复变数。宜静不宜动，耐心等待时机，急躁行事只会适得其反。",
+        career: "事业财运：事业进展缓慢，易遇阻碍与拖延，人际纠纷渐多。求财不顺，不宜投资扩张与大额支出，宜静待时机，不可冒进。工作上注意细节，避免出错留下隐患。",
+        love: "感情姻缘：感情易纠结反复，暧昧不清，矛盾易冷战僵持。不宜冲动做决定，需耐心沟通化解误会，强行推进反而容易破裂。",
+        study: "学业考试：学习效率不高，注意力难以集中，知识掌握不扎实。考试易发挥失常，需多花时间巩固基础，不宜临时抱佛脚。",
+        travel: "出行办事：出行易耽搁延误，办事不顺，易有突发变数。建议延后行程，若必须出行则预留充足时间，谨言慎行。",
+        health: "健康疾病：小病易缠绵不愈，恢复缓慢，精神状态欠佳。手术易有拖延、恢复慢的情况，注意肾脏、泌尿系统保养，忌生冷饮食，规律作息，切勿熬夜透支身体。",
+        lawsuit: "官司是非：官司拖延难决，进展缓慢，纠纷难解。不宜硬碰硬，宜拖延等待时机，尽量庭外和解，上诉易不利。",
+        lost: "失物找寻：失物难寻，被人移动或藏匿，短时间内找不到。需慢慢打听消息，不要放弃，过段时间可能会有线索。",
+        family: "家庭人际：家庭易有矛盾隔阂，沟通不畅。人际相处易有误会，关系冷淡，需耐心化解，不宜激化矛盾。"
+    },
+    {
+        name: "速喜",
+        desc: "速喜喜来临，求财向南行，失物申未午，逢人路上寻。",
+        general: "整体运势向好，喜事将近，事情很快就有结果。宜主动出击，把握时机，南方为吉位。",
+        career: "事业财运：事业有喜讯传来，工作推进顺利，易得领导赏识。财运亨通，南方有财路，适合洽谈合作、拓展业务，升职加薪有望。",
+        love: "感情姻缘：桃花运旺盛，缘分将至，单身者易遇心仪对象，适合主动表白。有伴者感情快速升温，甜蜜互动多，适合约会旅行。",
+        study: "学业考试：学习状态极佳，思维敏捷，接受新知识快。考试易超常发挥，文科、艺术类科目更具优势。",
+        travel: "出行办事：出行吉利顺畅，办事高效速成，很快就有好消息。途中易遇贵人相助，适合出差、洽谈与访友。",
+        health: "健康疾病：身体恢复迅速，病痛明显好转，精神状态佳。手术顺利，术后恢复快，保持心情舒畅则百病消，注意心脏与血压方面的保养。",
+        lawsuit: "官司是非：官司有转机，纠纷快速解决，调解顺利。法律事务能得贵人相助，谈判协商占优势，很快就能了结。",
+        lost: "失物找寻：失物很快能找到，在南方或路上、公共场所。有人捡到会送还，消息很快传来，中午前后寻找最佳。",
+        family: "家庭人际：家庭有喜事，家人开心和睦。人际关系和谐，朋友相聚欢乐多，贵人运旺，适合聚会沟通。"
+    },
+    {
+        name: "赤口",
+        desc: "赤口主口舌，官非切要防，失物急去寻，行人有惊慌。",
+        general: "整体运势欠佳，口舌是非多，易起争执冲突。宜低调行事，谨言慎行，避免与人发生口角。",
+        career: "事业财运：事业易起人事争执，小人当道，工作阻碍多。求财不顺，易破财损耗，不宜合作投资与担保，防他人算计。",
+        love: "感情姻缘：感情矛盾频发，争吵不断，口舌是非多。易有分手危机，需克制情绪，避免冲动言语伤害对方，冷战只会加剧裂痕。",
+        study: "学业考试：学习心浮气躁，粗心大意，考试易因紧张发挥失常。需调整心态，沉下心复习，避免受外界干扰。",
+        travel: "出行办事：出行多不顺，易遇冲突与意外，办事碰壁难成。建议减少出行，若必须出门则注意安全，少与人争执。",
+        health: "健康疾病：易上火发炎，术后需防感染、炎症并发症。注意口腔、呼吸系统与肺部健康，忌辛辣刺激饮食，防意外磕碰受伤。",
+        lawsuit: "官司是非：官司不利，官非缠身，易有口舌纠纷。易败诉破财，宜低调和解，不宜上诉硬碰硬，谨防赔偿损失。",
+        lost: "失物找寻：失物急去寻，时间越久越难找。可能被人捡走，尽快去丢失地点周边寻找，多问问路人，还有找回希望。",
+        family: "家庭人际：家庭易起争吵，矛盾不断。人际口舌是非多，少说话多做事，避免与人发生冲突，谨防小人挑拨。"
+    },
+    {
+        name: "小吉",
+        desc: "小吉最吉昌，路上好商量，阴人来报喜，失物在坤方。",
+        general: "整体运势吉祥，凡事皆和合，贵人运旺。适合沟通协商、合作共赢，结果往往超出预期。",
+        career: "事业财运：事业多得贵人相助，合作洽谈顺利，团队协作融洽。财运不错，正偏财皆有收益，适合做生意、拓展人脉。",
+        love: "感情姻缘：感情甜蜜升温，惊喜不断。单身者桃花旺盛，有人主动追求；有伴者关系融洽，适合约会旅行、增进感情。",
+        study: "学业考试：学习进步明显，遇难题有人指点。考试有好运加持，容易取得意料之外的好成绩，适合请教他人查漏补缺。",
+        travel: "出行办事：出行顺遂无忧，途中遇贵人，办事圆满成功。适合出差、旅游与探亲，一路舒心惬意。",
+        health: "健康疾病：身体康健，心情愉悦，小病小痛很快痊愈。手术顺利预后佳，恢复效果好，保持良好心态与作息，身体状态会越来越好。",
+        lawsuit: "官司是非：官司吉利，易胜诉获赔。纠纷能圆满解决，法律事务有贵人相助，协商谈判顺利，结果称心。",
+        lost: "失物找寻：失物在西南方（坤方），多在低处、角落、卧室里。能找到，多问问身边人，很快就有消息。",
+        family: "家庭人际：家庭和睦幸福，家人关系亲密。人际关系佳，贵人多，适合聚会沟通、增进感情，遇事有人帮衬。"
+    },
+    {
+        name: "空亡",
+        desc: "空亡事不祥，阴人多乖张，求财无利益，行人有灾殃。",
+        general: "整体运势低迷，事情易落空失败，计划难执行。宜低调蛰伏，暂缓重大决定，避免无谓的投入。",
+        career: "事业财运：事业不顺，计划易落空，工作推进阻力大。求财无利，易亏损破财，不宜投资创业与大额支出，宜低调行事。",
+        love: "感情姻缘：感情误会隔阂深，关系冷淡疏离。单身者难遇良缘，有伴者易有分离危机，沟通不畅，彼此猜忌。",
+        study: "学业考试：学习状态差，注意力涣散，效率低下。考试易失利，发挥失常，需调整状态，重新规划学习计划。",
+        travel: "出行办事：出行多阻碍变数，办事难成，易有意外状况。建议取消或延后行程，不宜贸然行动。",
+        health: "健康疾病：身体欠佳，病情易加重，精神萎靡。手术风险偏高，需谨慎选择医院与时机，注意脾胃与消化系统，及时就医检查，不宜拖延硬扛。",
+        lawsuit: "官司是非：官司凶多吉少，易败诉破财。纠纷难解决，不宜诉讼，尽量私了退让，避免更大损失。",
+        lost: "失物找寻：失物难找回，多半已丢失或被人拿走。希望渺茫，不宜抱太大期望，做好损失准备。",
+        family: "家庭人际：家庭不宁，家人关系冷淡，易有矛盾。人际疏离，小人多，不宜深交，低调处事避免是非。"
+    }
+];
+// 智能识别问题类别
+function getQuestionCategory(question) {
+    const q = question || '';
+    if (/失物|丢|丢失|遗失|找不到|不见了|钥匙|手机|钱包|证件|物品|哪去了/.test(q)) return 'lost';
+    if (/官司|诉讼|起诉|仲裁|纠纷|赔偿|官非|报案|调解|法律|合同|协议|违约|维权|开庭|律师/.test(q)) return 'lawsuit';
+    if (/健康|生病|身体|看病|病痛|吃药|康复|手术|开刀|治疗|住院|复查|体检|病情|伤口|恢复|备孕|生理|医院|医生/.test(q)) return 'health';
+    if (/感情|恋爱|姻缘|复合|分手|挽回|喜欢|表白|结婚|订婚|对象|相亲|暧昧|冷战|吵架|桃花|脱单|异地/.test(q)) return 'love';
+    if (/学业|考试|考研|考公|考证|上岸|学习|成绩|上学|开学|毕业|论文|答辩|面试|录取|挂科/.test(q)) return 'study';
+    if (/出行|出差|旅游|旅行|办事|找人|见面|行程|探亲|访友|赴约|开车|高铁|飞机|返程|堵车/.test(q)) return 'travel';
+    if (/工作|事业|职场|升职|加薪|业绩|考核|创业|生意|合作|项目|财运|赚钱|投资|理财|股票|基金|开店|收入|失业/.test(q)) return 'career';
+    if (/家庭|家人|父母|孩子|亲戚|朋友|同事|人际|关系|矛盾|和解|相处|搬家|装修|婆媳/.test(q)) return 'family';
+    return 'general';
+}
+const categoryLabels = {
+    general: '整体运势', career: '事业财运', love: '感情姻缘',
+    study: '学业考试', travel: '出行办事', health: '健康疾病',
+    lawsuit: '官司是非', lost: '失物找寻', family: '家庭人际'
+};
+// ========== 周公解梦数据（隐藏库） ==========
+const dreamData = {
+    animal: [
+        { name: "蛇", level: "平", desc: "梦见蛇多主财运与口舌。黑蛇主凶，白蛇主吉；被蛇咬主得财，蛇缠身主有烦恼缠身；多蛇同现主心事繁杂、人际有是非。" },
+        { name: "龙", level: "吉", desc: "梦见龙为大吉之兆，主事业腾飞、贵人相助。乘龙主升官进爵，龙入屋主得贵子，龙飞主运势大涨，前程似锦。" },
+        { name: "鱼", level: "吉", desc: "梦见鱼主财运与机遇。活鱼主得财，死鱼主失财；抓鱼主把握机会，吃鱼主享受成果；大鱼主大财，小鱼主小利。" },
+        { name: "狗", level: "吉", desc: "梦见狗主朋友与忠诚。狗叫主有朋友来访，狗追主有贵人相助，狗咬主朋友间有矛盾；疯狗主防小人暗算。" },
+        { name: "猫", level: "平", desc: "梦见猫主口舌与小人。黑猫主不祥，白猫主平安；猫抓主有小损失，猫叫主有是非；养猫主身边有小人伪装。" },
+        { name: "老鼠", level: "凶", desc: "梦见老鼠主破财与烦恼。老鼠多主家宅不宁、财物损耗；打老鼠主能化解小人，老鼠跑走主烦恼暂时消退。" },
+        { name: "老虎", level: "平", desc: "梦见老虎主权威与挑战。虎出山主遇强敌，虎入宅主有官非；打虎主能战胜困难，虎追主有压力缠身。" },
+        { name: "兔子", level: "吉", desc: "梦见兔子主好运与喜事。白兔主吉祥，多兔主家庭和睦；抓兔子主得意外之喜，兔子跑主错过小机会。" },
+        { name: "马", level: "吉", desc: "梦见马主事业与前程。骏马奔腾主事业顺利，骑马主升职加薪；马群主财运兴旺，马回头主有故人来访。" },
+        { name: "牛", level: "吉", desc: "梦见牛主财富与勤劳。黄牛主财运旺，水牛主辛苦得财；牛耕田主事业有成，牛追主有财运上门。" },
+        { name: "羊", level: "吉", desc: "梦见羊主吉祥与家庭。白羊主平安，群羊主家庭和睦；杀羊主有破财之忧，喂羊主积累财富。" },
+        { name: "猪", level: "吉", desc: "梦见猪主财运与福气。肥猪主大富大贵，黑猪主有小麻烦；杀猪主破财，猪跑主有意外之财。" },
+        { name: "鸡", level: "吉", desc: "梦见鸡主喜讯与财运。公鸡主报喜，母鸡主家庭和睦；鸡鸣主有好消息，杀鸡主有口舌是非。" },
+        { name: "鸭子", level: "平", desc: "梦见鸭子主奔波与小财。鸭子游水主事情顺利，鸭子叫主有口舌；一群鸭子主生活琐碎繁忙。" },
+        { name: "鸽子", level: "吉", desc: "梦见鸽子主平安与消息。鸽子飞主有喜讯，鸽子叫主有信来；养鸽子主家庭和睦，鸽群主朋友相聚。" },
+        { name: "老鹰", level: "吉", desc: "梦见老鹰主志向与机遇。鹰飞主事业高升，鹰抓猎物主把握机遇；鹰击长空主前途无量。" },
+        { name: "蜘蛛", level: "平", desc: "梦见蜘蛛主财运与烦恼。结网主等待机遇，蜘蛛掉身主有小麻烦；大蜘蛛主财运旺，小蜘蛛主琐事多。" },
+        { name: "蜜蜂", level: "吉", desc: "梦见蜜蜂主甜蜜与勤劳。蜂群主财运兴旺，被蜜蜂蛰主有小惊喜；蜜蜂采蜜主享受劳动成果。" },
+        { name: "蝴蝶", level: "吉", desc: "梦见蝴蝶主爱情与美好。蝴蝶飞舞主心情愉悦，彩蝶主桃花运旺；蝴蝶落身主有喜事降临。" },
+        { name: "乌龟", level: "吉", desc: "梦见乌龟主长寿与安稳。乌龟爬行主事情稳步推进，缩头主遇事退缩；活龟主平安健康，死龟主有损失。" }
+    ],
+    nature: [
+        { name: "下雨", level: "平", desc: "梦见下雨主情绪与财运。大雨主压力大，小雨主有小财；淋雨主有烦恼，躲雨主避开麻烦；雨过天晴主困境结束。" },
+        { name: "下雪", level: "吉", desc: "梦见下雪主纯洁与好运。大雪主财运旺，小雪主心情舒畅；积雪主积累财富，雪融化主困难化解。" },
+        { name: "打雷", level: "凶", desc: "梦见打雷主震动与变故。雷声大主有突发变故，打雷下雨主有烦心事；雷劈主有大灾，需谨慎行事。" },
+        { name: "大风", level: "平", desc: "梦见大风主变动与消息。大风主事情有变数，顺风主事事顺利，逆风主有阻碍；狂风主事业动荡。" },
+        { name: "彩虹", level: "吉", desc: "梦见彩虹主吉祥与希望。彩虹出现主雨过天晴，双彩虹主双喜临门；彩虹消失主美好事物短暂。" },
+        { name: "太阳", level: "吉", desc: "梦见太阳主光明与好运。朝阳主运势上升，烈日主心情烦躁；太阳落山主好运将过，晒太阳主身心舒畅。" },
+        { name: "月亮", level: "吉", desc: "梦见月亮主温柔与思念。圆月主团圆美满，弯月主事情未成；月亮发光主前途光明，月食主有小波折。" },
+        { name: "星星", level: "吉", desc: "梦见星星主前途与愿望。繁星点点主前程似锦，流星主愿望成真；星星掉落主有意外之事。" },
+        { name: "大海", level: "吉", desc: "梦见大海主心胸与财运。平静大海主生活安稳，波涛汹涌主挑战多；下海主事业拓展，看海主心情开阔。" },
+        { name: "河流", level: "平", desc: "梦见河流主生活与财运。清水主财运好，浑水主有麻烦；河水涨主财运升，河水落主运势降。" },
+        { name: "山", level: "吉", desc: "梦见山主稳定与依靠。高山主事业有成，爬山主步步高升；下山主运势下降，山崩主有变故。" },
+        { name: "森林", level: "平", desc: "梦见森林主探索与迷茫。茂密森林主前途未知，走出森林主拨开迷雾；森林迷路主内心困惑。" },
+        { name: "火焰", level: "吉", desc: "梦见火焰主财运与热情。大火主财运旺盛，小火主有小喜；救火主化解危机，火烧身主有喜事。" },
+        { name: "洪水", level: "凶", desc: "梦见洪水主灾祸与压力。洪水泛滥主有大灾，洪水退去主危机解除；被洪水冲主有破财之忧。" },
+        { name: "地震", level: "凶", desc: "梦见地震主动荡与变故。大地震主事业家庭有大变动，小地震主有小波折；地震过后主重获新生。" },
+        { name: "雾", level: "平", desc: "梦见雾主迷茫与阻碍。大雾弥漫主事情不明朗，雾散主真相大白；雾中行走主摸索前行。" },
+        { name: "霜", level: "平", desc: "梦见霜主阻碍与延迟。结霜主事情受阻，霜化主困难解除；下霜主心情低落、事情拖延。" },
+        { name: "露水", level: "吉", desc: "梦见露水主滋润与小财。露水多主财运亨通，露水干主好运短暂；沾露水主有小惊喜。" }
+    ],
+    person: [
+        { name: "陌生人", level: "平", desc: "梦见陌生人主机遇与未知。男性陌生人主外力相助，女性陌生人主缘分将至；陌生人说话主有消息传来。" },
+        { name: "死人", level: "平", desc: "梦见死人主重生与转机。死人复活主旧事重提，死人说话主有忠告；死人笑主有不祥，死人哭主有财运。" },
+        { name: "祖先", level: "吉", desc: "梦见祖先主庇佑与好运。祖先微笑主得庇佑，祖先说话主有指引；祭拜祖先主家宅平安、事业兴旺。" },
+        { name: "父母", level: "吉", desc: "梦见父母主依靠与家庭。父母健康主家宅安宁，父母生病主有担忧；父母去世主有变故，需多关心家人。" },
+        { name: "恋人", level: "平", desc: "梦见恋人主感情与思念。恋人开心主感情和睦，恋人吵架主有矛盾；恋人分手主关系更近，恋人出轨主内心不安。" },
+        { name: "朋友", level: "吉", desc: "梦见朋友主人际与助力。朋友相聚主有喜事，朋友吵架主有隔阂；朋友帮忙主遇难有援，朋友生病主有不顺。" },
+        { name: "老师", level: "吉", desc: "梦见老师主指引与学业。老师讲课主学习进步，老师批评主自身不足；老师微笑主得贵人指点。" },
+        { name: "医生", level: "平", desc: "梦见医生主健康与求助。医生看病主身体有恙，医生开药主疾病将愈；医生手术主需做出改变。" },
+        { name: "警察", level: "平", desc: "梦见警察主规则与压力。警察追主有愧疚，警察帮忙主得公正；警察问话主有官非之忧。" },
+        { name: "小孩", level: "吉", desc: "梦见小孩主纯真与喜事。男孩主有小人，女孩主有贵人；小孩笑主心情愉悦，小孩哭主有烦心事。" },
+        { name: "老人", level: "吉", desc: "梦见老人主智慧与长寿。老人说话主有忠告，健康老人主平安；老人生病主有担忧，去世主添寿。" },
+        { name: "乞丐", level: "吉", desc: "梦见乞丐主财运与施舍。乞丐要钱主有破财，给乞丐钱主得福报；乞丐进门主财运上门。" },
+        { name: "仇人", level: "凶", desc: "梦见仇人主矛盾与心结。仇人吵架主是非多，仇人笑主防暗算；仇人和解主心结化解。" }
+    ],
+    object: [
+        { name: "钱", level: "吉", desc: "梦见钱主财运与得失。数钱主财运旺，捡钱主有意外之财；丢钱主有小损失，借钱主有去无回。" },
+        { name: "黄金", level: "吉", desc: "梦见黄金主富贵与好运。黄金多主大富大贵，捡黄金主得财；丢黄金主有损失，戴黄金主身份提升。" },
+        { name: "钥匙", level: "平", desc: "梦见钥匙主机遇与答案。找钥匙主寻找方法，捡到钥匙主解决难题；丢钥匙主错过机会，开门锁主心想事成。" },
+        { name: "手机", level: "平", desc: "梦见手机主沟通与消息。手机响主有消息，手机坏主沟通不畅；丢手机主失去联系，换新机主新开始。" },
+        { name: "衣服", level: "平", desc: "梦见衣服主形象与状态。新衣服主新气象，脏衣服主有烦恼；穿新衣主改头换面，丢衣服主有损失。" },
+        { name: "鞋子", level: "平", desc: "梦见鞋子主出行与伴侣。新鞋主新征程，旧鞋主老路；丢鞋主有阻碍，穿鞋主事情稳妥。" },
+        { name: "食物", level: "吉", desc: "梦见食物主满足与收获。吃美食主生活富足，做饭主创造价值；食物多主财运好，食物坏主有麻烦。" },
+        { name: "水", level: "吉", desc: "梦见水主财运与情绪。清水主吉祥，浑水主烦恼；喝水主得财，流水主财运不断。" },
+        { name: "火", level: "吉", desc: "梦见火主热情与财运。火旺盛主财运兴，小火主有小喜；灭火主危机解除，生火主开启新局。" },
+        { name: "书", level: "吉", desc: "梦见书主智慧与学业。读书主学习进步，写书主才华展现；丢书主有损失，新书主新知识。" },
+        { name: "镜子", level: "平", desc: "梦见镜子主自我与真相。照镜子主审视自身，镜子碎主有变故；镜子脏主看不清真相。" },
+        { name: "棺材", level: "吉", desc: "梦见棺材主财运与升官。黑棺材主得财，红棺材主双喜；抬棺材主升职，棺材入宅主大吉。" },
+        { name: "花", level: "吉", desc: "梦见花主美好与爱情。鲜花主喜事，花盛开主运势旺；花凋谢主美好逝去，摘花主把握幸福。" },
+        { name: "树", level: "吉", desc: "梦见树主成长与依靠。大树主靠山稳，小树主成长中；树发芽主新生，树叶落主运势衰。" },
+        { name: "车", level: "平", desc: "梦见车主出行与事业。开车主掌控局面，坐车主有人相助；车坏主有阻碍，车祸主需谨慎。" },
+        { name: "船", level: "吉", desc: "梦见船主事业与旅程。船行顺利主事业顺，船翻主有波折；坐船主得贵人助，靠岸主事情落地。" }
+    ],
+    body: [
+        { name: "掉牙", level: "凶", desc: "梦见掉牙主损耗与变故。掉牙流血主破财，不流血主有小忧；全口牙掉主家宅有忧，掉牙重生主逢凶化吉。" },
+        { name: "流血", level: "平", desc: "梦见流血主财运与健康。流血多主破财，流血少主有小灾；别人流血主得财，自己流血主损失。" },
+        { name: "头发", level: "平", desc: "梦见头发主烦恼与运势。长头发主烦恼多，短头发主斩烦恼；掉头发主有忧愁，白头发主添寿。" },
+        { name: "眼睛", level: "吉", desc: "梦见眼睛主见识与真相。眼睛亮主前途明，眼睛瞎主看不清事；眼睛疼主有烦心事，多只眼主有洞察力。" },
+        { name: "手", level: "吉", desc: "梦见手主能力与人际。手有力主能力强，手受伤主有损失；握手主结交朋友，手张开主懂得放下。" },
+        { name: "脚", level: "平", desc: "梦见脚主出行与根基。脚受伤主有阻碍，脚有力主根基稳；光脚主脚踏实地，脚肿主有财运。" },
+        { name: "肚子", level: "吉", desc: "梦见肚子主财富与包容。肚子大主财运旺，肚子疼主有烦心事；肚子饿主渴望提升，吃饱主满足现状。" },
+        { name: "心脏", level: "平", desc: "梦见心脏主情绪与核心。心跳快主紧张，心脏疼主有伤心事；心脏健康主状态佳。" },
+        { name: "生病", level: "吉", desc: "梦见生病主反转与关注。自己生病主身体健康，别人生病主对方康健；重病主好运将至，久病主有转机。" },
+        { name: "怀孕", level: "吉", desc: "梦见怀孕主新生与希望。自己怀孕主有新计划，别人怀孕主有嫉妒；怀孕生子主心想事成。" },
+        { name: "死亡", level: "吉", desc: "梦见死亡主结束与新生。自己死亡主重获新生，别人死亡主对方长寿；死亡重生主否极泰来。" },
+        { name: "洗澡", level: "吉", desc: "梦见洗澡主净化与去除。洗干净主去除烦恼，洗不干净主还有心事；冷水澡主冷静，热水澡主解压。" },
+        { name: "剪头发", level: "吉", desc: "梦见剪头发主斩断与新生。剪短发主去除烦恼，剪坏了主有小遗憾；别人剪发主对方有变化。" },
+        { name: "纹身", level: "平", desc: "梦见纹身主标记与执念。新纹身主有新执念，纹身消失主放下过往；纹身疼主印象深刻。" }
+    ],
+    event: [
+        { name: "结婚", level: "吉", desc: "梦见结婚主喜事与合作。自己结婚主有新开始，别人结婚主有羡慕；婚礼热闹主运势旺，婚礼冷清主有孤单感。" },
+        { name: "葬礼", level: "吉", desc: "梦见葬礼主结束与财运。参加葬礼主得财，出殡主运势转好；棺材下葬主大吉，哭泣主有喜事。" },
+        { name: "吵架", level: "凶", desc: "梦见吵架主矛盾与压力。和人吵架主有是非，吵架赢了主占上风；吵架输了主有损失，和家人吵架主有隔阂。" },
+        { name: "打架", level: "凶", desc: "梦见打架主冲突与竞争。打赢了主战胜困难，打输了主有挫折；被打主有压力，劝架主调解矛盾。" },
+        { name: "逃跑", level: "平", desc: "梦见逃跑主逃避与压力。被追赶主有烦心事，逃跑成功主摆脱困境；逃不掉主还在困扰中。" },
+        { name: "飞翔", level: "吉", desc: "梦见飞翔主自由与提升。飞很高主事业高升，飞很稳主状态佳；飞不动主有阻碍，坠落主有挫折。" },
+        { name: "坠落", level: "凶", desc: "梦见坠落主失控与担忧。从高处坠落主有落差，坠落受伤主有损失；坠落到底主触底反弹。" },
+        { name: "考试", level: "平", desc: "梦见考试主压力与检验。考试顺利主自信，考试不会主准备不足；考高分主有回报，不及格主有担忧。" },
+        { name: "上班", level: "平", desc: "梦见上班主责任与状态。上班迟到主有焦虑，工作顺利主状态佳；失业主有危机感，升职主运势升。" },
+        { name: "吃饭", level: "吉", desc: "梦见吃饭主满足与收获。吃大餐主生活富足，和人吃饭主社交广；吃不完主财运有余。" },
+        { name: "走路", level: "平", desc: "梦见走路主进程与状态。走得快主效率高，走得慢主稳步推进；迷路主方向不明，走捷径主投机取巧。" },
+        { name: "爬山", level: "吉", desc: "梦见爬山主攀登与进步。爬到山顶主事业有成，爬不动主有困难；下山主运势下降，轻松下山主稳操胜券。" },
+        { name: "游泳", level: "吉", desc: "梦见游泳主适应与财运。游得好主能力强，游不动主有压力；清水游泳主吉祥，浑水游泳主有麻烦。" },
+        { name: "开车", level: "平", desc: "梦见开车主掌控与方向。开得稳主掌控局面，开得快主急于求成；车坏了主有阻碍，撞车主需谨慎。" },
+        { name: "搬家", level: "平", desc: "梦见搬家主变动与新开始。搬新家主环境变化，搬东西主操劳；搬家顺利主过渡平稳。" },
+        { name: "生孩子", level: "吉", desc: "梦见生孩子主新生与成果。生男孩主有小人，生女孩主有贵人；顺产主事情顺利，难产主有波折。" },
+        { name: "杀人", level: "凶", desc: "梦见杀人主情绪与压力。杀人见血主得财，杀人不见血主有凶；被杀主有转机，自卫杀人主化解危机。" },
+        { name: "被追杀", level: "凶", desc: "梦见被追杀主压力与逃避。被人追主有烦心事，逃跑成功主摆脱困境；被追上主麻烦缠身。" },
+        { name: "捡钱", level: "吉", desc: "梦见捡钱主财运与收获。捡大钱主有大财，捡小钱主有小喜；捡钱不还主得小财，归还主积福报。" },
+        { name: "丢东西", level: "凶", desc: "梦见丢东西主损失与不安。丢贵重物品主有破财，丢小东西主有小烦恼；找回来主失而复得。" }
+    ],
+    building: [
+        { name: "房子", level: "吉", desc: "梦见房子主家庭与事业。新房子主新气象，旧房子主回忆过往；房子大主格局大，房子小主安稳度日。" },
+        { name: "高楼", level: "吉", desc: "梦见高楼主事业与眼界。高楼耸立主前途光明，爬高楼主步步高升；楼倒塌主有变故，需谨慎。" },
+        { name: "学校", level: "平", desc: "梦见学校主学习与成长。在学校上课主提升自我，考试主面临考验；母校主怀念过往。" },
+        { name: "医院", level: "平", desc: "梦见医院主健康与疗愈。去医院看病主有烦心事，出院主摆脱困境；医院人多主焦虑不安。" },
+        { name: "寺庙", level: "吉", desc: "梦见寺庙主安宁与庇佑。拜佛许愿主得庇佑，寺庙香火旺盛主运势旺；出家主内心寻求平静。" },
+        { name: "商店", level: "吉", desc: "梦见商店主选择与财运。逛商店主有机会，买东西主得收获；商店人多主财运旺，空店主生意差。" },
+        { name: "厕所", level: "平", desc: "梦见厕所主排泄与去除。上厕所主去除烦恼，厕所脏主烦心事多；厕所干净主心情舒畅。" },
+        { name: "厨房", level: "吉", desc: "梦见厨房主生活与温暖。做饭主创造价值，厨房干净主生活安稳；厨房乱主有烦心事。" },
+        { name: "卧室", level: "吉", desc: "梦见卧室主私密与休息。卧室干净主内心平静，卧室乱主思绪繁杂；换卧室主环境变化。" },
+        { name: "桥", level: "吉", desc: "梦见桥主连接与过渡。过桥主度过难关，桥断主有阻碍；新桥主新机遇，旧桥主老路可行。" },
+        { name: "路", level: "平", desc: "梦见路主方向与前程。大路主前途宽广，小路主曲折前行；迷路主方向不明，修路主暂时受阻。" },
+        { name: "门", level: "平", desc: "梦见门主机遇与边界。开门主迎接新事，关门主拒绝外界；门坏主有破绽，锁门主自我封闭。" },
+        { name: "窗户", level: "吉", desc: "梦见窗户主视野与沟通。开窗主接受新事物，关窗主封闭自我；窗户破主有漏洞，窗外风景主前景。" },
+        { name: "楼梯", level: "吉", desc: "梦见楼梯主升降与进程。上楼梯主步步高升，下楼梯主运势下降；楼梯断主有阻碍，爬楼梯主努力进步。" }
+    ]
+};
+
+// ========== 中医解梦规则库 ==========
+const tcmRules = {
+    emotions: {
+        '喜|开心|高兴|笑': { zang: '心', qi: '心气涣散', desc: '过喜则心气涣散，神不守舍。多为心火偏旺、心神不宁之象。' },
+        '怒|生气|吵架|骂人|愤怒': { zang: '肝', qi: '肝气上逆', desc: '怒则气上，肝失疏泄。多为肝郁化火、肝火上炎之象。' },
+        '悲|难过|伤心|哭|哭泣': { zang: '肺', qi: '肺气耗伤', desc: '悲则气消，肺主忧悲。多为肺气不足、情志抑郁之象。' },
+        '思|想太多|纠结|焦虑|担心': { zang: '脾', qi: '脾气郁结', desc: '思则气结，脾失健运。多为思虑过度、脾虚气弱之象。' },
+        '恐|害怕|恐惧|被追|吓人|鬼': { zang: '肾', qi: '肾气下陷', desc: '恐则气下，肾主藏志。多为肾气亏虚、心神不安之象。' }
+    },
+    organs: {
+        '牙|牙齿|掉牙': { organ: '肾', desc: '齿为骨之余，肾主骨。梦见牙齿动摇、脱落，多为肾气不足、虚火上炎之象。' },
+        '头发|掉发': { organ: '肾', desc: '发为血之余，肾之华在发。梦见脱发、白发，多为精血不足、肾气亏虚之象。' },
+        '眼睛|瞎|看不见': { organ: '肝', desc: '肝开窍于目。梦见目昏、失明，多为肝血不足、肝火上炎之象。' },
+        '耳朵|聋|听不见': { organ: '肾', desc: '肾开窍于耳。梦见耳鸣、失聪，多为肾精亏虚、相火上扰之象。' },
+        '鼻子|流血|鼻血': { organ: '肺', desc: '肺开窍于鼻。梦见鼻衄、鼻塞，多为肺热壅盛、胃火上冲之象。' },
+        '口|嘴|流血': { organ: '脾', desc: '脾开窍于口。梦见口舌生疮、出血，多为脾胃积热、心火上炎之象。' },
+        '舌头': { organ: '心', desc: '心开窍于舌。梦见舌强、舌痛，多为心火亢盛、痰热扰心之象。' },
+        '皮肤|痒|过敏': { organ: '肺', desc: '肺主皮毛。梦见皮肤瘙痒、生疮，多为肺经风热、湿毒浸淫之象。' },
+        '骨头|骨折': { organ: '肾', desc: '肾主骨生髓。梦见骨痛、骨折，多为肾气不足、筋骨失养之象。' },
+        '血|流血|出血': { organ: '心', desc: '心主血脉。梦见出血，多为血热妄行、气虚不摄之象；上部出血多属火，下部出血多属虚。' }
+    },
+    nature: {
+        '火|大火|火烧': { element: '火', desc: '火为阳，主心与小肠。梦见大火焚烧，多为心火亢盛、胃火炽盛之象。' },
+        '水|洪水|大水': { element: '水', desc: '水为阴，主肾与膀胱。梦见大水泛滥，多为肾虚水泛、寒湿内停之象。' },
+        '风|大风|刮风': { element: '风', desc: '风为阳邪，善行数变，主肝。梦见大风，多为肝风内动、外感风邪之象。' },
+        '下雨|淋雨': { element: '湿', desc: '湿为阴邪，易困脾阳。梦见淋雨、涉水，多为脾虚湿盛、寒湿内阻之象。' },
+        '雪|下雪': { element: '寒', desc: '寒为阴邪，易伤阳气。梦见冰雪，多为阳虚寒盛、气血凝滞之象。' },
+        '雷|打雷': { element: '火', desc: '雷为火之声，通于心与胆。梦见惊雷，多为胆气不足、心火扰动之象。' }
+    },
+    classic: {
+        '飞|飞翔|飞起来': { desc: '上盛则梦飞，下盛则梦堕。阳气盛于上，故梦飞扬；多为心火上炎、肝气上逆之象。' },
+        '坠|坠落|掉下去': { desc: '上盛则梦飞，下盛则梦堕。阴气盛于下，故梦坠落；多为肾气亏虚、中气下陷之象。' },
+        '吃|吃饭|吃东西': { desc: '饱则梦与，饥则梦取。脾胃虚实之象，过饱多为食积，饥饿多为脾虚。' },
+        '跑|被追|逃跑': { desc: '正邪交争则梦奔走。多为体内有邪、气血奔逐之象，亦主胆气不足、心神不宁。' },
+        '死|死人|去世': { desc: '梦见死亡，多为气机逆乱、阴阳失调之象；亦主久病得愈、否极泰来。' },
+        '鬼|鬼怪|吓人': { desc: '肝藏魂，肺藏魄。魂魄不安则梦怪异，多为气血亏虚、痰火扰心、胆气不足之象。' }
+    }
+};
+
+// ========== 数据加载与初始化 ==========
+function loadAllData() {
+    records = loadJSON('records', []);
+    treeholes = loadJSON('treeholes', []);
+    countdowns = loadJSON('countdowns', []);
+    diaries = loadJSON('diaries', []);
+    editingDiaryId = null;
+}
+function renderAll() {
+    renderRecords();
+    renderTreeholes();
+    renderCountdowns();
+    renderDiaryList();
+    updateCategoryFilter();
+    updateTreeholeCategoryFilter();
+    updateUserBtn();
+}
+function init() {
+    loadAllData();
+    randomHeroText();
+    renderAll();
+    document.getElementById('diaryDate').value = todayStr();
+}
+init();
+// ========== 页面切换 ==========
+function switchTab(tab) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const page = document.getElementById('page-' + tab);
+    if (page) page.classList.add('active');
+    document.querySelectorAll('.tab-item').forEach(t => {
+        t.classList.toggle('active', t.dataset.tab === tab);
+    });
+    if (tab === 'home') {
+        randomHeroText();
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+// ========== 账号 ==========
+function getUsers() {
+    try { return JSON.parse(localStorage.getItem('appUsers') || '{}'); } catch (e) { return {}; }
+}
+function updateUserBtn() {
+    const btn = document.getElementById('userBtn');
+    btn.textContent = currentUser ? currentUser + ' · 退出' : '登录';
+}
+function userBtnClick() {
+    if (!currentUser) { show('loginMask'); return; }
+    if (confirm('退出当前账号？')) {
+        currentUser = null;
+        localStorage.removeItem('curUser');
+        loadAllData();
+        renderAll();
+    }
+}
+function doLogin() {
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPwd').value;
+    if (!u || !p) { alert('请输入用户名和密码'); return; }
+    const users = getUsers();
+    if (users[u] !== p) { alert('用户名或密码错误'); return; }
+    currentUser = u;
+    localStorage.setItem('curUser', u);
+    document.getElementById('loginPwd').value = '';
+    hide('loginMask');
+    loadAllData();
+    renderAll();
+    alert('欢迎回来，' + u);
+}
+function showRegister() { hide('loginMask'); show('regMask'); }
+function closeRegister() { hide('regMask'); }
+function closeLogin() { hide('loginMask'); }
+function doRegister() {
+    const u = document.getElementById('regUser').value.trim();
+    const p = document.getElementById('regPwd').value;
+    const p2 = document.getElementById('regPwd2').value;
+    if (!u) { alert('请设置用户名'); return; }
+    if (p.length < 6) { alert('密码至少6位'); return; }
+    if (p !== p2) { alert('两次密码不一致'); return; }
+    const users = getUsers();
+    if (users[u]) { alert('用户名已存在'); return; }
+    users[u] = p;
+    localStorage.setItem('appUsers', JSON.stringify(users));
+    currentUser = u;
+    localStorage.setItem('curUser', u);
+    hide('regMask');
+    loadAllData();
+    renderAll();
+    alert('注册成功，已自动登录');
+}
+// ========== 小确幸记录功能 ==========
+function selectMood(btn) {
+    document.querySelectorAll('#moodSelector .mood-tag').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    selectedMood = btn.dataset.mood;
+}
+
+function handleImageSelect(e) {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            tempImages.push(ev.target.result);
+            renderImagePreview();
+        };
+        reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+}
+
+function renderImagePreview() {
+    const wrap = document.getElementById('imagePreviewWrap');
+    if (!tempImages.length) {
+        wrap.innerHTML = '';
+        return;
+    }
+    wrap.innerHTML = tempImages.map((src, idx) => `
+        <div class="image-preview-item">
+            <img src="${src}" alt="预览">
+            <button class="image-preview-del" onclick="removeTempImage(${idx})">×</button>
+        </div>
+    `).join('');
+}
+
+function removeTempImage(idx) {
+    tempImages.splice(idx, 1);
+    renderImagePreview();
+}
+
+function saveRecord() {
+    const input = document.getElementById('recordInput');
+    const categoryInput = document.getElementById('recordCategory');
+    const text = input.value.trim();
+    const category = categoryInput.value.trim();
+    
+    if (!text && tempImages.length === 0) { 
+        alert('写点内容或添加张图片吧～'); 
+        return; 
+    }
+    
+    records.unshift({ 
+        id: uid(), 
+        text: text, 
+        mood: selectedMood,
+        category: category || '日常',
+        images: [...tempImages],
+        time: new Date().toISOString() 
+    });
+    saveJSON('records', records);
+    
+    input.value = '';
+    categoryInput.value = '';
+    tempImages = [];
+    renderImagePreview();
+    selectedMood = '😊 开心';
+    document.querySelectorAll('#moodSelector .mood-tag').forEach((t, i) => {
+        t.classList.toggle('active', i === 0);
+    });
+    
+    renderRecords();
+    updateCategoryFilter();
+    switchTab('list');
+    alert('小确幸已保存 ✓');
+}
+
+function deleteRecord(id) {
+    if (!confirm('删除这条小确幸？')) return;
+    records = records.filter(r => r.id !== id);
+    saveJSON('records', records);
+    renderRecords();
+    updateCategoryFilter();
+}
+
+function filterRecords(cat, btn) {
+    currentRecordFilter = cat;
+    document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    renderRecords();
+}
+
+function updateCategoryFilter() {
+    const categories = new Set();
+    records.forEach(r => {
+        if (r.category) categories.add(r.category);
+    });
+    const filterBar = document.getElementById('recordFilter');
+    if (!filterBar) return;
+    filterBar.innerHTML = '<div class="filter-tag active" data-cat="all" onclick="filterRecords(\'all\', this)">全部</div>';
+    categories.forEach(cat => {
+        filterBar.innerHTML += `<div class="filter-tag" data-cat="${esc(cat)}" onclick="filterRecords('${esc(cat)}', this)">${esc(cat)}</div>`;
+    });
+    const datalist = document.getElementById('categoryList');
+    if (datalist) {
+        datalist.innerHTML = '';
+        categories.forEach(cat => {
+            datalist.innerHTML += `<option value="${esc(cat)}">`;
+        });
+    }
+}
+
+function viewImage(src) {
+    const mask = document.createElement('div');
+    mask.className = 'image-viewer-mask';
+    mask.onclick = (e) => {
+        if (e.target === mask) mask.remove();
+    };
+    mask.innerHTML = `
+        <button class="image-viewer-close" onclick="this.parentElement.remove()">×</button>
+        <img src="${src}" alt="大图查看">
+    `;
+    document.body.appendChild(mask);
+}
+
+function renderRecords() {
+    const box = document.getElementById('recordList');
+    
+    let list = records;
+    if (currentRecordFilter !== 'all') {
+        list = records.filter(r => r.category === currentRecordFilter);
+    }
+    
+    if (!list.length) {
+        box.innerHTML = '<div class="tip-text">还没有小确幸，去「小确幸」页记录第一条吧～</div>';
+        return;
+    }
+    
+    box.innerHTML = list.map(r => {
+        const imagesHtml = r.images && r.images.length ? 
+            `<div class="record-images">
+                ${r.images.slice(0, 3).map(src => `<img src="${src}" onclick="viewImage('${src}')" alt="小确幸图片">`).join('')}
+                ${r.images.length > 3 ? `<div style="position:relative; aspect-ratio:1; background:#f5f7fa; display:grid; place-items:center; color:#6b7280; font-size:18px; font-weight:500;">+${r.images.length - 3}</div>` : ''}
+            </div>` : '';
+        
+        const moodHtml = r.mood ? `<span class="record-mood">${esc(r.mood)}</span>` : '';
+        const catHtml = r.category ? `<span class="record-category">${esc(r.category)}</span>` : '';
+        
+        return `
+        <div class="record-item">
+            <div class="record-text">
+                ${esc(r.text) || '<span style="color:#9ca3af;">（图片记录）</span>'}
+                <div class="record-meta">
+                    ${moodHtml}
+                    ${catHtml}
+                    <span class="record-time" style="margin-left:auto;">${fmtDT(r.time)}</span>
+                </div>
+                ${imagesHtml}
+            </div>
+            <button class="btn-del" onclick="deleteRecord('${r.id}')">删除</button>
+        </div>
+        `;
+    }).join('');
+}
+
+// ========== 树洞功能 ==========
+function selectTreeholeMood(btn) {
+    document.querySelectorAll('#treeholeMoodSelector .mood-tag').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    selectedTreeholeMood = btn.dataset.mood;
+}
+
+function handleTreeholeImageSelect(e) {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            tempTreeholeImages.push(ev.target.result);
+            renderTreeholeImagePreview();
+        };
+        reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+}
+
+function renderTreeholeImagePreview() {
+    const wrap = document.getElementById('treeholeImagePreviewWrap');
+    if (!tempTreeholeImages.length) {
+        wrap.innerHTML = '';
+        return;
+    }
+    wrap.innerHTML = tempTreeholeImages.map((src, idx) => `
+        <div class="image-preview-item">
+            <img src="${src}" alt="预览">
+            <button class="image-preview-del" onclick="removeTempTreeholeImage(${idx})">×</button>
+        </div>
+    `).join('');
+}
+
+function removeTempTreeholeImage(idx) {
+    tempTreeholeImages.splice(idx, 1);
+    renderTreeholeImagePreview();
+}
+
+function saveTreehole() {
+    const input = document.getElementById('treeholeInput');
+    const categoryInput = document.getElementById('treeholeCategory');
+    const text = input.value.trim();
+    const category = categoryInput.value.trim();
+    
+    if (!text && tempTreeholeImages.length === 0) { 
+        alert('写点内容或添加张图片吧～'); 
+        return; 
+    }
+    
+    treeholes.unshift({ 
+        id: uid(), 
+        text: text, 
+        mood: selectedTreeholeMood,
+        category: category || '日常',
+        images: [...tempTreeholeImages],
+        time: new Date().toISOString() 
+    });
+    saveJSON('treeholes', treeholes);
+    
+    input.value = '';
+    categoryInput.value = '';
+    tempTreeholeImages = [];
+    renderTreeholeImagePreview();
+    selectedTreeholeMood = '😢 难过';
+    document.querySelectorAll('#treeholeMoodSelector .mood-tag').forEach((t, i) => {
+        t.classList.toggle('active', i === 0);
+    });
+    
+    renderTreeholes();
+    updateTreeholeCategoryFilter();
+    alert('已投入树洞，就让坏心情留在这吧 🤍');
+}
+
+function deleteTreehole(id) {
+    if (!confirm('删除这条树洞记录？')) return;
+    treeholes = treeholes.filter(t => t.id !== id);
+    saveJSON('treeholes', treeholes);
+    renderTreeholes();
+    updateTreeholeCategoryFilter();
+}
+
+function filterTreeholes(cat, btn) {
+    currentTreeholeFilter = cat;
+    document.querySelectorAll('#treeholeFilter .filter-tag').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    renderTreeholes();
+}
+
+function updateTreeholeCategoryFilter() {
+    const categories = new Set();
+    treeholes.forEach(t => {
+        if (t.category) categories.add(t.category);
+    });
+    const filterBar = document.getElementById('treeholeFilter');
+    if (!filterBar) return;
+    filterBar.innerHTML = '<div class="filter-tag active" data-cat="all" onclick="filterTreeholes(\'all\', this)">全部</div>';
+    categories.forEach(cat => {
+        filterBar.innerHTML += `<div class="filter-tag" data-cat="${esc(cat)}" onclick="filterTreeholes('${esc(cat)}', this)">${esc(cat)}</div>`;
+    });
+    const datalist = document.getElementById('treeholeCategoryList');
+    if (datalist) {
+        datalist.innerHTML = '';
+        categories.forEach(cat => {
+            datalist.innerHTML += `<option value="${esc(cat)}">`;
+        });
+    }
+}
+
+function renderTreeholes() {
+    const box = document.getElementById('treeholeList');
+    
+    let list = treeholes;
+    if (currentTreeholeFilter !== 'all') {
+        list = treeholes.filter(t => t.category === currentTreeholeFilter);
+    }
+    
+    if (!list.length) {
+        box.innerHTML = '<div class="tip-text">还没有树洞记录，有不开心就倒在这里吧～</div>';
+        return;
+    }
+    
+    box.innerHTML = list.map(t => {
+        const imagesHtml = t.images && t.images.length ? 
+            `<div class="record-images">
+                ${t.images.slice(0, 3).map(src => `<img src="${src}" onclick="viewImage('${src}')" alt="树洞图片">`).join('')}
+                ${t.images.length > 3 ? `<div style="position:relative; aspect-ratio:1; background:#eef2f7; display:grid; place-items:center; color:#4b5563; font-size:18px; font-weight:500;">+${t.images.length - 3}</div>` : ''}
+            </div>` : '';
+        
+        const moodHtml = t.mood ? `<span class="record-mood treehole-mood">${esc(t.mood)}</span>` : '';
+        const catHtml = t.category ? `<span class="treehole-category">${esc(t.category)}</span>` : '';
+        
+        return `
+        <div class="record-item treehole-item">
+            <div class="record-text">
+                ${esc(t.text) || '<span style="color:#9ca3af;">（图片记录）</span>'}
+                <div class="record-meta">
+                    ${moodHtml}
+                    ${catHtml}
+                    <span class="record-time" style="margin-left:auto;">${fmtDT(t.time)}</span>
+                </div>
+                ${imagesHtml}
+            </div>
+            <button class="btn-del" onclick="deleteTreehole('${t.id}')">删除</button>
+        </div>
+        `;
+    }).join('');
+}
+
+// ========== 倒数日 ==========
+function addCountdown() {
+    const name = document.getElementById('cdName').value.trim();
+    const date = document.getElementById('cdDate').value;
+    if (!name || !date) { alert('请填写事件名称和日期'); return; }
+    countdowns.unshift({ id: uid(), name: name, date: date });
+    saveJSON('countdowns', countdowns);
+    document.getElementById('cdName').value = '';
+    renderCountdowns();
+    alert('倒数日已添加 ✓');
+}
+function deleteCountdown(id) {
+    if (!confirm('删除这个倒数日？')) return;
+    countdowns = countdowns.filter(c => c.id !== id);
+    saveJSON('countdowns', countdowns);
+    renderCountdowns();
+}
+function renderCountdowns() {
+    const box = document.getElementById('cdList');
+    if (!countdowns.length) {
+        box.innerHTML = '<div class="tip-text">还没有倒数日，添加一个值得期待的日子吧～</div>';
+        return;
+    }
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    box.innerHTML = countdowns.map(c => {
+        const target = new Date(c.date + 'T00:00:00');
+        const diff = Math.round((target - today) / 8640000);
+        let numText, unitText;
+        if (diff > 0) { numText = diff; unitText = '天后'; }
+        else if (diff === 0) { numText = '今天'; unitText = '🎉'; }
+        else { numText = -diff; unitText = '天前'; }
+        return '<div class="countdown-card">' +
+            '<div class="countdown-name">' + esc(c.name) +
+                '<div style="font-size:13px; color:#b8a58c; font-weight:400;">' + esc(c.date) + '</div>' +
+            '</div>' +
+            '<div style="display:flex; align-items:center; gap:14px;">' +
+                '<div><span class="countdown-num" style="font-size:26px;">' + numText + '</span><span class="countdown-unit">' + unitText + '</span></div>' +
+                '<button class="btn-del" onclick="deleteCountdown(\'' + c.id + '\')">删除</button>' +
+            '</div>' +
+        '</div>';
+    }).join('');
+}
+// ========== 日记板块 ==========
+const moodOptions = ['😊 开心', '🌤 平静', '🥰 幸福', '😢 难过', '😫 疲惫', '😡 烦躁'];
+function saveDiary() {
+    const dateEl = document.getElementById('diaryDate');
+    const moodEl = document.getElementById('diaryMood');
+    const titleEl = document.getElementById('diaryTitle');
+    const contentEl = document.getElementById('diaryContent');
+    const date = dateEl.value;
+    const mood = moodEl.value;
+    const title = titleEl.value.trim();
+    const content = contentEl.value.trim();
+    if (!date) { alert('请选择日记日期'); return; }
+    if (!content) { alert('日记内容不能为空哦'); return; }
+    const isEdit = !!editingDiaryId;
+    if (isEdit) {
+        const d = diaries.find(x => x.id === editingDiaryId);
+        if (d) {
+            d.date = date; d.mood = mood; d.title = title;
+            d.content = content;
+            d.updateTime = new Date().toISOString();
+        }
+        editingDiaryId = null;
+        document.getElementById('diarySubmitBtn').textContent = '保存日记';
+        document.getElementById('diaryCancelBtn').classList.add('hidden');
+    } else {
+        diaries.unshift({
+            id: uid(), date: date, mood: mood, title: title,
+            content: content, createTime: new Date().toISOString()
+        });
+    }
+    saveJSON('diaries', diaries);
+    titleEl.value = '';
+    contentEl.value = '';
+    dateEl.value = todayStr();
+    renderDiaryList();
+    alert(isEdit ? '日记已更新 ✓' : '日记已保存 ✓');
+}
+function editDiary(id) {
+    const d = diaries.find(x => x.id === id);
+    if (!d) return;
+    editingDiaryId = id;
+    document.getElementById('diaryDate').value = d.date;
+    const moodEl = document.getElementById('diaryMood');
+    const moodVal = d.mood || '🌤 平静';
+    let matched = false;
+    for (const o of moodEl.options) { if (o.value === moodVal) { matched = true; break; } }
+    if (matched) moodEl.value = moodVal; else moodEl.selectedIndex = 1;
+    document.getElementById('diaryTitle').value = d.title || '';
+    document.getElementById('diaryContent').value = d.content;
+    document.getElementById('diarySubmitBtn').textContent = '更新日记';
+    document.getElementById('diaryCancelBtn').classList.remove('hidden');
+    switchTab('diary');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function cancelDiaryEdit() {
+    editingDiaryId = null;
+    document.getElementById('diaryTitle').value = '';
+    document.getElementById('diaryContent').value = '';
+    document.getElementById('diaryDate').value = todayStr();
+    document.getElementById('diarySubmitBtn').textContent = '保存日记';
+    document.getElementById('diaryCancelBtn').classList.add('hidden');
+}
+function deleteDiary(id) {
+    if (!confirm('确定删除这篇日记吗？删除后无法恢复。')) return;
+    if (editingDiaryId === id) cancelDiaryEdit();
+    diaries = diaries.filter(d => d.id !== id);
+    saveJSON('diaries', diaries);
+    renderDiaryList();
+}
+function renderDiaryList() {
+    const box = document.getElementById('diaryList');
+    const stat = document.getElementById('diaryCount');
+    if (stat) stat.textContent = diaries.length ? '共 ' + diaries.length + ' 篇' : '';
+    if (!diaries.length) {
+        box.innerHTML = '<div class="tip-text">还没有日记，从今天的第一篇开始吧 📖</div>';
+        return;
+    }
+    const sorted = diaries.slice().sort((a, b) =>
+        (b.date + (b.createTime || '')).localeCompare(a.date + (a.createTime || '')));
+    const thisYear = String(new Date().getFullYear());
+    box.innerHTML = sorted.map(d => {
+        const yearPart = (d.date || '').slice(0, 4);
+        const dayPart = (d.date || '').slice(5).replace('-', '/');
+        const weekPart = weekdayOf(d.date) + (yearPart && yearPart !== thisYear ? ' · ' + yearPart : '');
+        const titleHtml = d.title ? '<span class="diary-title">' + esc(d.title) + '</span>'
+            : '<span class="diary-title" style="color:#9ca3af; font-weight:400;">无题</span>';
+        const timeText = fmtDT(d.createTime) + (d.updateTime ? ' · 编辑于 ' + fmtDT(d.updateTime) : '');
+        return '<div class="diary-item">' +
+            '<div class="diary-head">' +
+                '<div class="diary-date">' +
+                    '<span class="diary-date-day">' + esc(dayPart) + '</span>' +
+                    '<span class="diary-date-week">' + esc(weekPart) + '</span>' +
+                '</div>' +
+                '<div class="diary-body">' +
+                    '<div class="diary-title-row">' +
+                        '<span class="diary-mood">' + esc(d.mood || '🌤 平静') + '</span>' +
+                        titleHtml +
+                    '</div>' +
+                    '<div class="diary-content">' + esc(d.content) + '</div>' +
+                    '<div class="diary-foot">' +
+                        '<span>' + timeText + '</span>' +
+                        '<span class="diary-ops">' +
+                            '<button class="btn-mini" onclick="editDiary(\'' + d.id + '\')">编辑</button>' +
+                            '<button class="btn-del" onclick="deleteDiary(\'' + d.id + '\')">删除</button>' +
+                        '</span>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+    }).join('');
+}
+// ========== 小六壬起卦 ==========
+function startLiuRen() {
+    const box = document.getElementById('lrResult');
+    const q = document.getElementById('lrQuestion').value.trim();
+    const category = getQuestionCategory(q);
+    
+    const now = new Date();
+    const monthCount = now.getMonth() + 1;
+    const dayCount = now.getDate();
+    const hourCount = Math.floor((now.getHours() + 1) / 2) + 1;
+    const idx = (monthCount - 1 + dayCount - 1 + hourCount - 1) % 6;
+    const g = guaData[idx];
+    
+    let n = 0;
+    const timer = setInterval(() => {
+        n++;
+        box.innerHTML = '<div class="result-name" style="opacity:' + (0.35 + Math.random() * 0.65) + ';">' +
+            guaData[Math.floor(Math.random() * 6)].name + '</div>';
+        if (n >= 8) {
+            clearInterval(timer);
+            const detail = g[category] || g.general;
+            const label = categoryLabels[category] || '整体运势';
+            
+            box.innerHTML =
+                '<div class="result-name">' + g.name + '</div>' +
+                '<div class="result-desc">' + g.desc + '</div>' +
+                '<div class="result-detail">' +
+                    '<div class="result-detail-title">' + label + '解读</div>' +
+                    '<div class="result-detail-text">' + detail + '</div>' +
+                '</div>' +
+                (q ? '<p style="text-align:center; margin-top:16px; color:#92400e; font-size:14px;">所问：' + esc(q) + '</p>' : '');
+        }
+    }, 80);
+}
+// ========== 周公解梦（隐藏词条+中医补充）==========
+function getAllDreamItems() {
+    let all = [];
+    for (const cat in dreamData) {
+        all = all.concat(dreamData[cat]);
+    }
+    return all;
+}
+
+function matchDreamItems(keyword) {
+    const all = getAllDreamItems();
+    const kw = keyword.trim();
+    if (!kw) return [];
+    return all.filter(item => kw.includes(item.name));
+}
+
+function getTCMInterpretation(text) {
+    const results = [];
+    const t = text || '';
+
+    for (const pattern in tcmRules.emotions) {
+        const reg = new RegExp(pattern);
+        if (reg.test(t)) {
+            results.push(tcmRules.emotions[pattern]);
+        }
+    }
+    for (const pattern in tcmRules.organs) {
+        const reg = new RegExp(pattern);
+        if (reg.test(t)) {
+            results.push(tcmRules.organs[pattern]);
+        }
+    }
+    for (const pattern in tcmRules.nature) {
+        const reg = new RegExp(pattern);
+        if (reg.test(t)) {
+            results.push(tcmRules.nature[pattern]);
+        }
+    }
+    for (const pattern in tcmRules.classic) {
+        const reg = new RegExp(pattern);
+        if (reg.test(t)) {
+            results.push(tcmRules.classic[pattern]);
+        }
+    }
+    return results;
+}
+
+function renderTCMCard(items, hasEntry) {
+    if (!items || !items.length) return '';
+    const title = hasEntry ? '中医视角补充解读' : '未收录词条 · 传统中医解读';
+    const content = items.map(item => {
+        const parts = [];
+        if (item.zang) parts.push(`<p><strong>对应脏腑：</strong>${item.zang}（${item.qi}）</p>`);
+        if (item.organ) parts.push(`<p><strong>对应脏腑：</strong>${item.organ}</p>`);
+        if (item.element) parts.push(`<p><strong>五行属性：</strong>${item.element}</p>`);
+        parts.push(`<p>${item.desc}</p>`);
+        return parts.join('');
+    }).join('<hr style="margin:10px 0; border:none; border-top:1px dashed #bbf7d0;">');
+
+    const advice = `<p style="margin-top:10px;"><strong>调理建议：</strong>规律作息，避免熬夜；饮食清淡，少辛辣油腻；保持情绪平和，适当运动舒展气机。若身体持续不适，请及时就医。</p>`;
+
+    return `
+        <div class="tcm-card">
+            <div class="tcm-title">🌿 ${title}</div>
+            <div class="tcm-content">
+                ${content}
+                ${advice}
+            </div>
+        </div>
+    `;
+}
+
+function searchDream() {
+    const input = document.getElementById('dreamSearch');
+    const kw = input.value.trim();
+    const resultBox = document.getElementById('dreamResult');
+
+    if (!kw) {
+        alert('请描述你的梦境');
+        return;
+    }
+
+    const matchedItems = matchDreamItems(kw);
+    const tcmItems = getTCMInterpretation(kw);
+
+    let html = '';
+
+    if (matchedItems.length > 0) {
+        html += '<div class="dream-result-title">📖 匹配到的传统解梦</div>';
+        html += '<div class="dream-list">';
+        html += matchedItems.map(item =>
+            '<div class="dream-card">' +
+                '<div class="dream-card-head">' +
+                    '<div class="dream-name">' + esc(item.name) + '</div>' +
+                    '<span class="dream-level ' + item.level + '">' + item.level + '</span>' +
+                '</div>' +
+                '<div class="dream-desc">' + esc(item.desc) + '</div>' +
+            '</div>'
+        ).join('');
+        html += '</div>';
+    }
+
+    if (tcmItems.length > 0) {
+        html += renderTCMCard(tcmItems, matchedItems.length > 0);
+    } else if (matchedItems.length === 0) {
+        html += `
+            <div class="tcm-card">
+                <div class="tcm-title">🌿 传统中医解读</div>
+                <div class="tcm-content">
+                    <p>《黄帝内经》云：「正邪从外袭内，而未有定舍，反淫于脏，不得定处，与营卫俱行，而与魂魄飞扬，使人卧不得安而喜梦。」</p>
+                    <p>梦境多为脏腑气血盛衰、阴阳失调的反映。心神不安、魂魄不宁则多梦纷纭。</p>
+                    <p><strong>通用调理：</strong>睡前少思，静心安神；饮食有节，起居有常；适度运动，疏通气机。若多梦影响睡眠，可咨询中医师辨证调理。</p>
+                </div>
+            </div>
+        `;
+    }
+
+    resultBox.innerHTML = html;
+}
+
+function searchDreamTag(tag) {
+    document.getElementById('dreamSearch').value = tag;
+    searchDream();
+}
+// ========== 备份与恢复 ==========
+function exportBackup() {
+    const data = {
+        app: '美好生活记录',
+        version: 2,
+        user: currentUser || 'guest',
+        exportedAt: new Date().toISOString(),
+        data: {
+            records: records,
+            treeholes: treeholes,
+            countdowns: countdowns,
+            diaries: diaries
+        }
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = '美好生活记录备份_' + todayStr() + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function importBackup() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,application/json';
+    input.onchange = () => {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            let obj;
+            try { obj = JSON.parse(reader.result); }
+            catch (e) { alert('文件格式不正确，导入失败'); return; }
+            const d = obj && obj.data ? obj.data : obj;
+            if (!d || (typeof d !== 'object')) { alert('文件格式不正确，导入失败'); return; }
+            if (!confirm('导入将覆盖当前账号的记录、倒数日和日记数据，继续吗？')) return;
+            if (Array.isArray(d.records)) { records = d.records; saveJSON('records', records); }
+            if (Array.isArray(d.treeholes)) { treeholes = d.treeholes; saveJSON('treeholes', treeholes); }
+            if (Array.isArray(d.countdowns)) { countdowns = d.countdowns; saveJSON('countdowns', countdowns); }
+            if (Array.isArray(d.diaries)) { diaries = d.diaries; saveJSON('diaries', diaries); }
+            cancelDiaryEdit();
+            renderAll();
+            alert('导入成功 ✓');
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+</script>
+
+<!-- ===== HRT 内嵌工具层（整合版新增） ===== -->
+<style>
+    .hrt-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: #f5f7fa;
+        flex-direction: column;
+    }
+    .hrt-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+        background-color: #1c1a19;
+        color: #f0e6d6;
+    }
+    .hrt-topbar-title {
+        flex: 1;
+        text-align: center;
+        font-size: 16px;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .hrt-back-btn, .hrt-ext-btn {
+        padding: 8px 16px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.22);
+        color: #f0e6d6;
+        font-size: 14px;
+        cursor: pointer;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: 0.2s;
+    }
+    .hrt-back-btn:hover, .hrt-ext-btn:hover {
+        background: rgba(255,255,255,0.2);
+    }
+    .hrt-frame-wrap {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+    }
+    .hrt-frame {
+        width: 100%;
+        height: 100%;
+        border: none;
+        background: #ffffff;
+    }
+    .hrt-load-tip {
+        position: absolute;
+        inset: 0;
+        display: none;
+        place-items: center;
+        background: #f5f7fa;
+        color: #6b7280;
+        font-size: 15px;
+        text-align: center;
+        line-height: 2;
+        z-index: 2;
+    }
+</style>
+
+<div class="hrt-overlay" id="hrtOverlay">
+    <div class="hrt-topbar">
+        <button class="hrt-back-btn" onclick="closeHrt()">‹ 返回</button>
+        <div class="hrt-topbar-title">HRT 记录 · Tracker</div>
+        <a class="hrt-ext-btn" href="https://mtf-hrt-03.netlify.app/" target="_blank" rel="noopener" title="使用在线版">↗</a>
+    </div>
+    <div class="hrt-frame-wrap">
+        <div class="hrt-load-tip" id="hrtLoadTip">正在加载 HRT Tracker…</div>
+        <iframe class="hrt-frame" id="hrtFrame" title="HRT Tracker" onload="hrtFrameLoaded()"></iframe>
+    </div>
+</div>
+
+<script>
+    // ===== HRT 内嵌工具逻辑（整合版新增） =====
+    var hrtLoaded = false;
+    function openHrt() {
+        var ov = document.getElementById('hrtOverlay');
+        var f = document.getElementById('hrtFrame');
+        var tip = document.getElementById('hrtLoadTip');
+        ov.style.display = 'flex';
+        if (!hrtLoaded) {
+            tip.style.display = 'grid';
+            tip.innerHTML = '正在加载 HRT Tracker…';
+            if (!f.getAttribute('src')) {
+                f.setAttribute('src', 'index.html?embed=1');
+            }
+            setTimeout(function () {
+                if (!hrtLoaded) {
+                    tip.innerHTML = '加载较慢或失败<br>可点右上角 ↗ 使用在线版';
+                }
+            }, 8000);
+        }
+    }
+    function closeHrt() {
+        document.getElementById('hrtOverlay').style.display = 'none';
+    }
+    function hrtFrameLoaded() {
+        hrtLoaded = true;
+        document.getElementById('hrtLoadTip').style.display = 'none';
+    }
+</script>
+</body>
+</html>

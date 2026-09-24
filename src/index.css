@@ -1,0 +1,376 @@
+@import "tailwindcss";
+
+@variant dark (&:is(.dark *));
+
+@theme {
+    --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, "Noto Sans Hebrew", "Noto Sans Arabic", sans-serif;
+    --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, "Noto Sans Hebrew", "Noto Sans Arabic", sans-serif;
+
+    /* M3 Pink Primary */
+    --color-m3-primary: #D4548A;
+    --color-m3-primary-light: #E07AAA;
+    --color-m3-primary-container: #FFD6E7;
+    --color-m3-on-primary: #FFFFFF;
+    --color-m3-on-primary-container: #8B1A4A;
+
+    /* M3 Rose Accent */
+    --color-m3-accent: #E91E8C;
+    --color-m3-accent-light: #F06DAF;
+    --color-m3-accent-container: #FFE4F3;
+    --color-m3-on-accent: #FFFFFF;
+    --color-m3-on-accent-container: #9C0060;
+
+    /* M3 Surfaces — light pink neutrals */
+    --color-m3-surface: #FFF8FA;
+    --color-m3-surface-dim: #FAF0F4;
+    --color-m3-surface-bright: #FFFFFF;
+    --color-m3-surface-container-lowest: #FFFFFF;
+    --color-m3-surface-container-low: #FDF2F6;
+    --color-m3-surface-container: #F8E8EF;
+    --color-m3-surface-container-high: #F2DCE6;
+    --color-m3-surface-container-highest: #EAD0DC;
+    --color-m3-on-surface: #26101A;
+    --color-m3-on-surface-variant: #7D5368;
+    --color-m3-outline: #B8899E;
+    --color-m3-outline-variant: #EAD0DC;
+
+    /* M3 Dark Surfaces */
+    --color-m3-dark-surface: #1C1917;
+    --color-m3-dark-surface-dim: #171412;
+    --color-m3-dark-surface-bright: #292524;
+    --color-m3-dark-surface-container-lowest: #0C0A09;
+    --color-m3-dark-surface-container-low: #1C1917;
+    --color-m3-dark-surface-container: #292524;
+    --color-m3-dark-surface-container-high: #44403C;
+    --color-m3-dark-surface-container-highest: #57534E;
+    --color-m3-dark-on-surface: #E7E5E4;
+    --color-m3-dark-on-surface-variant: #A8A29E;
+    --color-m3-dark-outline: #78716C;
+    --color-m3-dark-outline-variant: #44403C;
+
+    /* M3 Shape Scale */
+    --radius-xs: 4px;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 28px;
+    --radius-full: 9999px;
+
+    /* M3 Elevation */
+    --shadow-m3-1: 0 1px 3px 1px rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-m3-2: 0 2px 6px 2px rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-m3-3: 0 4px 8px 3px rgba(0, 0, 0, 0.08), 0 1px 3px 0 rgba(0, 0, 0, 0.10);
+}
+
+/* Prevent auto-zoom on iOS/Android when focusing small inputs.
+   Excludes datetime-local/date/time/month/week which open native pickers
+   and do not trigger viewport zoom on iOS. */
+@media screen and (max-width: 768px) {
+    input:not([type="datetime-local"]):not([type="date"]):not([type="time"]):not([type="month"]):not([type="week"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+}
+
+/* Base Styles */
+html {
+    height: 100%;
+    overscroll-behavior-y: contain;
+}
+
+body {
+    font-family: var(--font-sans);
+    height: 100%;
+    margin: 0;
+    overscroll-behavior-y: contain;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+    height: 100%;
+    width: 100%;
+}
+
+/* Utilities */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.scroll-pb-nav {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 768px) {
+    .scroll-pb-nav {
+        padding-bottom: 0;
+    }
+}
+
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.font-display {
+    font-family: var(--font-display);
+}
+
+/* M3 Expressive Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes m3-emphasized-decelerate {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes m3-emphasized-accelerate {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+}
+
+@keyframes m3-pill-expand {
+    from {
+        width: 0;
+        opacity: 0;
+    }
+
+    to {
+        width: 100%;
+        opacity: 1;
+    }
+}
+
+@keyframes m3-container-open {
+    from {
+        opacity: 0;
+        transform: scaleY(0.92);
+        transform-origin: top;
+    }
+
+    to {
+        opacity: 1;
+        transform: scaleY(1);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-slide-up {
+    animation: slideInUp 0.4s cubic-bezier(0.2, 0, 0, 1) forwards;
+}
+
+.animate-m3-decelerate {
+    animation: m3-emphasized-decelerate 0.5s cubic-bezier(0.05, 0.7, 0.1, 1) forwards;
+}
+
+.animate-m3-container {
+    animation: m3-container-open 0.35s cubic-bezier(0.05, 0.7, 0.1, 1) forwards;
+}
+
+/* M3 Transition Curves */
+.transition-m3 {
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+.transition-m3-standard {
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+    transition-duration: 300ms;
+}
+
+.transition-m3-emphasized {
+    transition-timing-function: cubic-bezier(0.05, 0.7, 0.1, 1);
+    transition-duration: 500ms;
+}
+
+/* Page Transitions */
+.page-transition {
+    animation-duration: 0.75s;
+    animation-timing-function: cubic-bezier(0.05, 0.7, 0.1, 1);
+    animation-fill-mode: both;
+    will-change: transform, opacity;
+}
+
+@keyframes pageForward {
+    from {
+        opacity: 0;
+        transform: scale(0.97) translateX(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateX(0);
+    }
+}
+
+@keyframes pageBackward {
+    from {
+        opacity: 0;
+        transform: scale(0.97) translateX(-12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateX(0);
+    }
+}
+
+.page-transition.page-forward {
+    animation-name: pageForward;
+}
+
+.page-transition.page-backward {
+    animation-name: pageBackward;
+}
+
+/* M3 Active indicator for nav */
+.m3-active-indicator {
+    background-color: var(--color-m3-primary-container);
+    border-radius: var(--radius-full);
+    transition: all 0.5s cubic-bezier(0.05, 0.7, 0.1, 1);
+}
+
+/* M3 Surface tint overlay */
+.m3-surface-tint {
+    position: relative;
+}
+
+.m3-surface-tint::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: var(--color-m3-primary);
+    opacity: 0.05;
+    pointer-events: none;
+    transition: opacity 0.3s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.m3-surface-tint:hover::after {
+    opacity: 0.08;
+}
+
+/* M3 State layer */
+.m3-state-layer {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.m3-state-layer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0;
+    background-color: currentColor;
+    transition: opacity 200ms cubic-bezier(0.2, 0, 0, 1);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.m3-state-layer:hover::before {
+    opacity: 0.08;
+}
+
+.m3-state-layer:active::before {
+    opacity: 0.12;
+    transition-duration: 100ms;
+}
+
+.m3-state-layer:focus-visible::before {
+    opacity: 0.12;
+}
+
+/* M3 Menu Styles */
+.m3-menu {
+    background-color: var(--color-m3-surface-container-low);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-m3-2);
+    padding: 8px 0;
+    min-width: 112px;
+    max-width: 280px;
+    z-index: 100;
+}
+
+.dark .m3-menu {
+    background-color: var(--color-m3-dark-surface-container-high);
+    border-color: var(--color-m3-dark-outline-variant);
+}
+
+.m3-menu-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 12px 16px;
+    gap: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-m3-on-surface);
+    transition: background-color 200ms cubic-bezier(0.2, 0, 0, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.dark .m3-menu-item {
+    color: var(--color-m3-dark-on-surface);
+}
+
+.m3-menu-item:hover {
+    background-color: var(--color-m3-surface-container-high);
+}
+
+.dark .m3-menu-item:hover {
+    background-color: var(--color-m3-dark-surface-container-highest);
+}
+
+.m3-menu-item.selected {
+    background-color: var(--color-m3-secondary-container);
+    color: var(--color-m3-on-secondary-container);
+}
+
+.dark .m3-menu-item.selected {
+    background-color: var(--color-m3-dark-secondary-container);
+    color: var(--color-m3-dark-on-secondary-container);
+}
