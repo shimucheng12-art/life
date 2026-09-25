@@ -1849,7 +1849,7 @@ async function doRegister() {
 }
 
 // ========== 云端账号（手机号短信登录 + 数据云同步，方案B） ==========
-const CLOUD_API_BASE = ''; // 后端部署后填入，如 https://life-diary-api.xxxxx.workers.dev
+const CLOUD_API_BASE = 'https://life-diary-api-icegmnxkgp.cn-hangzhou.fcapp.run'; // 阿里云函数计算（国内直连）
 const CLOUD_SYNC_KEYS = ['records', 'treeholes', 'countdowns', 'diaries', 'diaryCollections'];
 let cloudAuth = null;        // {phone, token, uid, exp（秒）}
 let lastSyncedAt = null;     // 上次成功同步的服务端版本号

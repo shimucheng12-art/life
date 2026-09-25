@@ -8,7 +8,7 @@ compatibility_date = "2025-12-04"
 [[d1_databases]]
 binding = "DB"
 database_name = "life-diary-db"
-database_id = "PLACEHOLDER_FILL_AFTER_D1_CREATE"
+database_id = "0e7dd91f-d809-4a3f-bef5-d5fe1430b22c"
 
 # 必需密钥（绝不写入仓库，用 wrangler secret 注入）：
 #   JWT_SECRET               随机 ≥32 字符，用于签发登录令牌
