@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from '../contexts/LanguageContext';
 import { formatDate, formatTime } from '../utils/helpers';
-import { SimulationResult, DoseEvent, interpolateConcentration, interpolateConcentration_E2, interpolateConcentration_CPA, interpolateConcentration_T, LabResult, convertToPgMl, convertToNgDl, isT_LabUnit, T_ESTERS } from '../../logic';
+import { SimulationResult, DoseEvent, Route, interpolateConcentration, interpolateConcentration_E2, interpolateConcentration_CPA, interpolateConcentration_T, LabResult, convertToPgMl, convertToNgDl, isT_LabUnit, T_ESTERS } from '../../logic';
 import { Activity, RotateCcw, Info, FlaskConical, Maximize2, Minimize2 } from 'lucide-react';
 import { useHRTMode } from '../contexts/HRTModeContext';
 import {
@@ -158,6 +158,7 @@ const ResultChart = ({ sim, events, labResults = [], calibrationFn = (_t: number
                 time: timeMs,
                 concE2: calibratedE2,
                 concCPA: rawCPA_ngmL,
+                concE2Raw: sim.concPGmL_E2[i],
                 conc: calibratedE2
             };
         });
@@ -311,6 +312,13 @@ const ResultChart = ({ sim, events, labResults = [], calibrationFn = (_t: number
         };
     }, [xDomain, data, labPoints, eventPoints, cpaEventPoints, nowPoint, minTime, maxTime]);
 
+    // 是否处于「个性化模型」状态（校准系数偏离 1）：决定徽章与红色对照虚线的显示
+    const isCalibrated = useMemo(() => {
+        if (!sim || data.length === 0) return false;
+        const probes = [minTime / 3600000, now / 3600000, maxTime / 3600000];
+        return probes.some(p => Number.isFinite(p) && Math.abs((calibrationFn(p) ?? 1) - 1) > 0.001);
+    }, [sim, data, minTime, now, maxTime, calibrationFn]);
+
     // Animate the Y domains so the axis glides instead of snapping on zoom/pan.
     const [dispYLeft,  setDispYLeft]  = useState<[number, number] | undefined>(undefined);
     const [dispYRight, setDispYRight] = useState<[number, number] | undefined>(undefined);
@@ -356,10 +364,10 @@ const ResultChart = ({ sim, events, labResults = [], calibrationFn = (_t: number
     }, [yDomainRight]);
 
     // Slider helpers for quick panning (helps mobile users)
-    // Initialize view: center on "now" with a reasonable window (e.g. 14 days)
+    // Initialize view: center on "now" with a one-month window（对齐参考实现的默认月视图）
     useEffect(() => {
         if (!initializedRef.current && data.length > 0) {
-            const initialWindow = 7 * 24 * 3600 * 1000; // 1 week
+            const initialWindow = 30 * 24 * 3600 * 1000; // 1 month
             const start = Math.max(minTime, now - initialWindow / 2);
             const end = Math.min(maxTime, start + initialWindow);
 
@@ -502,13 +510,43 @@ const ResultChart = ({ sim, events, labResults = [], calibrationFn = (_t: number
         const miniMapGradientId = fullscreen ? 'overviewConcFullscreen' : 'overviewConc';
 
         return (
-            <div className={`bg-white dark:bg-neutral-900 relative flex flex-col h-full uppercase tracking-wide ${fullscreen ? '' : 'border border-gray-200 dark:border-neutral-800 rounded-lg'}`}>
+            <div className={`bg-white dark:bg-neutral-900 relative flex flex-col h-full ${fullscreen ? '' : 'border border-gray-200 dark:border-neutral-800 rounded-lg'}`}>
                 <div className={`flex justify-between items-center ${fullscreen ? 'px-4 md:px-6 py-3' : 'px-4 md:px-6 py-4'} border-b border-gray-100 dark:border-neutral-800`}>
-                    <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 normal-case">
                         {t('chart.title')}
+                        {(() => {
+                            const factorNow = calibrationFn(now / 3600000);
+                            const calibrated = Math.abs(factorNow - 1) > 0.001;
+                            return (
+                                <span
+                                    className={`px-2 py-0.5 rounded-full text-[10px] font-medium tracking-normal flex items-center gap-1 ${calibrated
+                                        ? 'bg-pink-100 dark:bg-pink-950 text-pink-600 dark:text-pink-400'
+                                        : 'bg-gray-100 dark:bg-neutral-800 text-gray-500 dark:text-gray-400'}`}
+                                    title={calibrated ? `×${(factorNow ?? 1).toFixed(2)}` : undefined}
+                                >
+                                    {calibrated && <FlaskConical size={10} />}
+                                    {calibrated ? t('chart.model_personalized') : t('chart.model_estimated')}
+                                    {calibrated ? ` ×${(factorNow ?? 1).toFixed(2)}` : ''}
+                                </span>
+                            );
+                        })()}
                     </h2>
 
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-1.5">
+                        <button
+                            onClick={() => zoomToDuration(7)}
+                            className="px-2 py-0.5 text-[11px] font-semibold text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 border border-gray-200 dark:border-neutral-700 rounded-full transition-colors"
+                            title={t('chart.window_1w')}
+                        >
+                            1W
+                        </button>
+                        <button
+                            onClick={() => zoomToDuration(30)}
+                            className="px-2 py-0.5 text-[11px] font-semibold text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 border border-gray-200 dark:border-neutral-700 rounded-full transition-colors"
+                            title={t('chart.window_1m')}
+                        >
+                            1M
+                        </button>
                         <button
                             onClick={fullscreen ? closeFullscreenChart : openFullscreenChart}
                             className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
@@ -517,7 +555,7 @@ const ResultChart = ({ sim, events, labResults = [], calibrationFn = (_t: number
                             {fullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
                         </button>
                         <button
-                            onClick={() => zoomToDuration(7)}
+                            onClick={() => zoomToDuration(30)}
                             className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
                             title={t('chart.reset')}
                         >
@@ -527,20 +565,16 @@ const ResultChart = ({ sim, events, labResults = [], calibrationFn = (_t: number
                 </div>
 
                 <div className={`${chartHeightClass} w-full touch-none relative select-none px-2 pb-2 mt-4`}>
-                    {(() => {
-                        const factorNow = calibrationFn(now / 3600000);
-                        return Math.abs(factorNow - 1) > 0.001 ? (
-                            <div className="absolute top-0 right-4 z-10 px-2 py-0.5 rounded border bg-white dark:bg-neutral-800 border-gray-200 dark:border-neutral-700 flex items-center gap-1 opacity-80 pointer-events-none">
-                                <FlaskConical size={10} className="text-gray-400 dark:text-gray-500" />
-                                <span className="text-[10px] text-gray-500 dark:text-gray-400">
-                                    ×{(factorNow ?? 1).toFixed(2)}
-                                </span>
-                            </div>
-                        ) : null;
-                    })()}
                     <ResponsiveContainer width="100%" height="100%">
 
                         <ComposedChart data={data} margin={{ top: 12, right: 10, bottom: 0, left: 10 }}>
+                            <defs>
+                                <linearGradient id={fullscreen ? 'e2AreaGradientFs' : 'e2AreaGradient'} x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="#f472b6" stopOpacity={0.45} />
+                                    <stop offset="60%" stopColor="#f9a8d4" stopOpacity={0.18} />
+                                    <stop offset="100%" stopColor="#fbcfe8" stopOpacity={0.02} />
+                                </linearGradient>
+                            </defs>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#374151' : '#f2f4f7'} />
                             <XAxis
                                 dataKey="time"
@@ -561,7 +595,7 @@ const ResultChart = ({ sim, events, labResults = [], calibrationFn = (_t: number
                                     domain={dispYLeft ?? yDomainLeft ?? [0, 'auto']}
                                     allowDataOverflow
                                     tickCount={5}
-                                    tickFormatter={(v: number) => v.toFixed(1)}
+                                    tickFormatter={(v: number) => v >= 100 ? String(Math.round(v)) : (Math.round(v * 10) / 10).toString()}
                                     tick={{ fontSize: 10, fill: isTransmasc ? '#0ea5e9' : '#ec4899', fontWeight: 600 }}
                                     axisLine={false}
                                     tickLine={false}
@@ -577,7 +611,7 @@ const ResultChart = ({ sim, events, labResults = [], calibrationFn = (_t: number
                                     domain={dispYRight ?? yDomainRight ?? [0, 'auto']}
                                     allowDataOverflow
                                     tickCount={5}
-                                    tickFormatter={(v: number) => v.toFixed(1)}
+                                    tickFormatter={(v: number) => v >= 100 ? String(Math.round(v)) : (Math.round(v * 10) / 10).toString()}
                                     tick={{ fontSize: 10, fill: '#8b5cf6', fontWeight: 600 }}
                                     axisLine={false}
                                     tickLine={false}
@@ -600,14 +634,46 @@ const ResultChart = ({ sim, events, labResults = [], calibrationFn = (_t: number
                                     ifOverflow="extendDomain"
                                 />
                             )}
-                            {hasE2Data && (
+                            {/* 注射事件竖直虚线（对齐参考实现） */}
+                            {(hasE2Data || hasCPAData) && events
+                                .filter(e => e.route === Route.injection)
+                                .map(e => (
+                                    <ReferenceLine
+                                        key={'inj-' + e.id}
+                                        x={e.timeH * 3600000}
+                                        stroke="#ef4444"
+                                        strokeOpacity={0.35}
+                                        strokeDasharray="4 4"
+                                        strokeWidth={1}
+                                        yAxisId={hasE2Data ? 'left' : 'right'}
+                                        ifOverflow="extendDomain"
+                                    />
+                                ))}
+                            {/* 未校准的通用模型对照曲线（红色虚线，对齐参考实现） */}
+                            {isCalibrated && hasE2Data && (
                                 <Line
+                                    data={data}
+                                    type="linear"
+                                    dataKey="concE2Raw"
+                                    yAxisId="left"
+                                    stroke="#ef4444"
+                                    strokeOpacity={0.7}
+                                    strokeDasharray="6 4"
+                                    strokeWidth={1.5}
+                                    dot={false}
+                                    isAnimationActive={false}
+                                />
+                            )}
+                            {/* 主曲线：平滑上升 + 半透明渐变填充（对齐参考实现） */}
+                            {hasE2Data && (
+                                <Area
                                     data={data}
                                     type="linear"
                                     dataKey="concE2"
                                     yAxisId="left"
                                     stroke="#f472b6"
                                     strokeWidth={2}
+                                    fill={`url(#${fullscreen ? 'e2AreaGradientFs' : 'e2AreaGradient'})`}
                                     dot={false}
                                     isAnimationActive={false}
                                     activeDot={{ r: 6, strokeWidth: 3, stroke: '#fff', fill: '#ec4899' }}

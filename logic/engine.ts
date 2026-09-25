@@ -23,13 +23,21 @@ interface ResolvedParams {
     rateMGh: number;   // 贴片零阶速率
 }
 
-/** 三室解析解：吸收 k1 → 水解 k2 → 清除 k3 */
+/** 三室解析解：吸收 k1 → 水解 k2 → 清除 k3
+ *  与上游 HRT-Recorder-online/logic.ts 的 _analytic3C 完全一致（MIT）。
+ *  标准链式三室解：A(t) = D·F·k1·k2·(t1+t2+t3)，t=0 时恒为 0，曲线平滑上升。
+ *  （旧实现系数错位，会在给药瞬间产生 a+b+c≈5 倍剂量的虚假尖峰。） */
 function _analytic3C(tau: number, dose: number, F: number, k1: number, k2: number, k3: number): number {
-    if (tau <= 0 || dose <= 0) return 0;
-    const a = k1 * (k2 - k3) / ((k2 - k1) * (k3 - k1));
-    const b = k2 * (k3 - k1) / ((k1 - k2) * (k3 - k2));
-    const c = k3 * (k1 - k2) / ((k1 - k3) * (k2 - k3));
-    return dose * F * (a * Math.exp(-k1 * tau) + b * Math.exp(-k2 * tau) + c * Math.exp(-k3 * tau));
+    if (tau <= 0 || dose <= 0 || k1 <= 0 || k2 <= 0) return 0;
+    const k1_k2 = k1 - k2;
+    const k1_k3 = k1 - k3;
+    const k2_k3 = k2 - k3;
+    // 奇异保护：任意两个速率过于接近时退化为安全值
+    if (Math.abs(k1_k2) < 1e-9 || Math.abs(k1_k3) < 1e-9 || Math.abs(k2_k3) < 1e-9) return 0;
+    const term1 = Math.exp(-k1 * tau) / (k1_k2 * k1_k3);
+    const term2 = Math.exp(-k2 * tau) / (-k1_k2 * k2_k3);
+    const term3 = Math.exp(-k3 * tau) / (k1_k3 * k2_k3);
+    return dose * F * k1 * k2 * (term1 + term2 + term3);
 }
 
 /** 单室 Bateman */

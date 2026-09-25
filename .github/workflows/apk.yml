@@ -49,10 +49,12 @@ jobs:
       - name: 发布到 Releases（公开下载）
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: apk-v1.5.1
+          tag_name: apk-v1.5.2
           name: 碎碎念 Android 安装包
           body: |
-            修复：删除/退出等确认弹窗失效、图片上传与数据导入无法选择文件。
+            1.5.2 更新：
+            1. 修复 HRT 血药浓度图表：注射后曲线不再出现异常尖峰，与模型一致（平滑单峰 + 渐变面积填充 + 双 Y 轴 + 注射日标记 + 1W/1M 视图切换）。
+            2. 日记新增「收纳」功能：可创建收纳夹分类整理日记，支持按收纳夹筛选和关键词搜索。
             调试签名的安装包，安装时允许「未知来源/安装未知应用」。
             更新请先卸载旧版再安装（数据不受影响）。
           files: apk/app/build/outputs/apk/debug/app-debug.apk
