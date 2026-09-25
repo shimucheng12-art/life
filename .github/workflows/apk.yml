@@ -49,11 +49,12 @@ jobs:
       - name: 发布到 Releases（公开下载）
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: apk-v1.4.0
-          name: HRT Tracker Android 安装包
+          tag_name: apk-v1.5.0
+          name: 碎碎念 Android 安装包
           body: |
-            调试签名的安装包。安装时允许「未知来源/安装未知应用」即可。
-            更新版本请先卸载旧版再安装。
+            新名字「碎碎念」+ 新日落图标。
+            调试签名的安装包，安装时允许「未知来源/安装未知应用」。
+            更新请先卸载旧版（HRT Tracker）再安装。
           files: apk/app/build/outputs/apk/debug/app-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

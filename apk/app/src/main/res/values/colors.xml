@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#00897B</color>
-    <color name="icon_bg">#00897B</color>
+    <!-- 取自日落照片顶部天空的暖色，用于状态栏 -->
+    <color name="primary">#7D5341</color>
 </resources>
