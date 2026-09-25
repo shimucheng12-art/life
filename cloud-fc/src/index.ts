@@ -27,6 +27,12 @@ export interface Env {
     ALIYUN_AK_SECRET: string;
     OSS_BUCKET: string;
     OSS_REGION: string;
+    /** 号码认证·短信认证：赠送签名名称（控制台「赠送签名配置」页选择） */
+    SMS_SIGN_NAME?: string;
+    /** 赠送模板 CODE（控制台「赠送模板配置」页选择） */
+    SMS_TEMPLATE_CODE?: string;
+    /** 模板参数，默认 {"code":"##code##","min":"5"}（平台生成验证码） */
+    SMS_TEMPLATE_PARAM?: string;
 }
 
 /** 可注入的短信实现（测试时用桩替换，不触网） */
@@ -77,6 +83,8 @@ const SMS_ERR_MAP: Record<string, string> = {
     'Forbidden': '账号未开通号码认证服务或无权限，请联系管理员',
     'IncompleteSignature': '短信服务密钥配置有误，请联系管理员',
     'Throttling': '请求太频繁，请稍后重试',
+    'MissingSignName': '短信签名尚未配置，请先在控制台完成「赠送签名配置」',
+    'isv.SMS_SIGNATURE_ILLEGAL_ERROR': '短信签名配置有误，请联系管理员',
 };
 
 // ---------------- 基础工具 ----------------
@@ -147,7 +155,17 @@ async function pnsSendSmsVerifyCode(env: Env, phone: string): Promise<PnsResult>
         ValidTime: '300',
         Version: '2017-05-25',
     };
-    return pnsCall(env, params);
+    // 赠送签名 + 赠送模板（控制台配置后经环境变量注入；平台生成验证码 ##code##）
+    if (env.SMS_SIGN_NAME) params.SignName = env.SMS_SIGN_NAME;
+    if (env.SMS_TEMPLATE_CODE) {
+        params.TemplateCode = env.SMS_TEMPLATE_CODE;
+        params.TemplateParam = env.SMS_TEMPLATE_PARAM || '{"code":"##code##","min":"5"}';
+    }
+    // 翻译层：parsed=false 才是传输失败（502）；平台业务错误 → ok:true + error 码（429 + 友好文案）
+    const r = await pnsCall(env, params);
+    if (!r.parsed) return { ok: false, error: r.error, httpStatus: r.httpStatus };
+    const code = r.body?.Code ? String(r.body.Code) : '';
+    return { ok: true, error: code && code !== 'OK' ? code : undefined };
 }
 
 async function pnsCheckSmsVerifyCode(env: Env, phone: string, code: string): Promise<PnsResult & { pass?: boolean }> {
@@ -181,9 +199,9 @@ async function pnsCall(env: Env, params: Record<string, string>): Promise<PnsRes
     const url = 'https://dypnsapi.aliyuncs.com/?Signature=' + popEncode(sig) + '&' + canonical;
     let res: any;
     try {
-        res = await fetch(url, { method: 'POST' });
-    } catch {
-        return { ok: false, parsed: false, error: 'network' };
+        res = await fetch(url, { method: 'POST', signal: AbortSignal.timeout(10000) });
+    } catch (e: any) {
+        return { ok: false, parsed: false, error: 'network:' + String(e?.name || e?.message || e).slice(0, 60) };
     }
     let body: any = null;
     try { body = await res.json(); } catch { /* 非 JSON 按传输失败处理 */ }
@@ -243,21 +261,27 @@ export class OssStore implements KVStore {
     }
 
     async putIfMatch(key: string, value: any, etag: string): Promise<boolean> {
+        // OSS PutObject 不支持 If-Match 条件写（仅 GET/HEAD 支持），
+        // 故用 HEAD + ETag 比对实现乐观锁（单用户应用场景足够，顺序场景完全正确）
         try {
-            await this.client.put(key, Buffer.from(JSON.stringify(value), 'utf8'), { headers: { 'If-Match': etag } });
-            return true;
+            const h = await this.client.head(key);
+            const cur = String(h?.res?.headers?.etag || '');
+            if (!cur || cur !== etag) return false;
         } catch (e: any) {
-            if (e?.status === 412) return false;
+            if (e?.status === 404 || e?.code === 'NoSuchKey') return false;
             throw e;
         }
+        await this.client.put(key, Buffer.from(JSON.stringify(value), 'utf8'));
+        return true;
     }
 
     async putIfAbsent(key: string, value: any): Promise<boolean> {
         try {
-            await this.client.put(key, Buffer.from(JSON.stringify(value), 'utf8'), { headers: { 'If-None-Match': '*' } });
+            // x-oss-forbid-overwrite 是 OSS 原生支持的防覆盖头；已存在时返回 409
+            await this.client.put(key, Buffer.from(JSON.stringify(value), 'utf8'), { headers: { 'x-oss-forbid-overwrite': 'true' } });
             return true;
         } catch (e: any) {
-            if (e?.status === 412) return false;
+            if (e?.status === 409 || e?.status === 412) return false;
             throw e;
         }
     }
@@ -493,6 +517,9 @@ function getEnv(): Env {
         ALIYUN_AK_SECRET: process.env.ALIYUN_AK_SECRET || '',
         OSS_BUCKET: process.env.OSS_BUCKET || '',
         OSS_REGION: process.env.OSS_REGION || 'oss-cn-hangzhou',
+        SMS_SIGN_NAME: process.env.SMS_SIGN_NAME || '',
+        SMS_TEMPLATE_CODE: process.env.SMS_TEMPLATE_CODE || '',
+        SMS_TEMPLATE_PARAM: process.env.SMS_TEMPLATE_PARAM || '',
     };
 }
 
@@ -536,7 +563,7 @@ export const handler = async function (event: any, context: any, callback?: any)
         res = await apiSingleton.handle({ method, path, headers, body: bodyRaw });
     } catch (e: any) {
         console.error('handler error:', e?.stack || e);
-        res = { status: 500, headers: { 'content-type': 'application/json; charset=utf-8', 'access-control-allow-origin': ALLOWED_ORIGINS[0] }, body: { error: '服务器内部错误' } };
+        res = { status: 500, headers: { 'content-type': 'application/json; charset=utf-8', 'access-control-allow-origin': ALLOWED_ORIGINS[0] }, body: { error: '服务器内部错误', detail: String(e?.message || e).slice(0, 150) } };
     }
     const envelope = JSON.stringify({
         statusCode: res.status,
