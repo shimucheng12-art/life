@@ -880,6 +880,87 @@
             font-size: 15px;
             cursor: pointer;
         }
+        /* ===== 手机号登录 ===== */
+        .login-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+        .login-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px 0;
+            border-radius: 999px;
+            background: #f5f6f8;
+            color: #6b7280;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .login-tab.active {
+            background: #fdf2f6;
+            color: #be185d;
+            font-weight: 600;
+        }
+        .sms-row {
+            display: flex;
+            gap: 8px;
+            align-items: stretch;
+        }
+        .sms-row .form-input { flex: 1; }
+        .sms-btn {
+            flex-shrink: 0;
+            padding: 0 14px;
+            white-space: nowrap;
+            font-size: 13px;
+            border-radius: 999px;
+            background: #fdf2f6;
+            color: #be185d;
+            border: 1px solid #fbcfe8;
+            cursor: pointer;
+        }
+        .sms-btn:disabled {
+            background: #f3f4f6;
+            color: #9ca3af;
+            border-color: #e5e7eb;
+            cursor: not-allowed;
+        }
+        .cloud-login-btn {
+            width: 100%;
+            margin-top: 16px;
+            padding: 12px;
+            border: none;
+            border-radius: 999px;
+            background: #f9a8d4;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .cloud-login-btn:hover { background: #f472b6; }
+        .cloud-login-btn:disabled { background: #f3d1e3; cursor: not-allowed; }
+        .cloud-hint {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+        .cloud-tip {
+            font-size: 13px;
+            color: #b45309;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 12px;
+            padding: 10px 12px;
+            margin-bottom: 14px;
+            line-height: 1.6;
+        }
+        .cloud-status {
+            display: inline-block;
+            margin-left: 6px;
+            font-size: 11px;
+            color: #0e9f6e;
+        }
         /* ===== 移动端适配 ===== */
         @media (max-width: 900px) {
             .dream-list { grid-template-columns: 1fr 1fr; }
@@ -1177,20 +1258,39 @@
             </div>
         </div>
     </div>
-    <!-- 登录弹窗 -->
+    <!-- 登录弹窗（手机号短信登录 + 本地账号） -->
     <div class="mask hidden" id="loginMask">
         <div class="popup">
             <h3>账号登录</h3>
-            <label class="form-label">用户名</label>
-            <input class="form-input" placeholder="请输入用户名" id="loginUser">
-            <label class="form-label">密码</label>
-            <input class="form-input" type="password" placeholder="请输入密码" id="loginPwd">
-            <div class="popup-btns">
-                <button class="btn-cancel" onclick="closeLogin()">取消</button>
-                <button class="btn-confirm" onclick="doLogin()">登录</button>
+            <div class="login-tabs">
+                <div class="login-tab active" id="tabPhone" onclick="switchLoginTab('phone')">📱 手机号登录</div>
+                <div class="login-tab" id="tabLocal" onclick="switchLoginTab('local')">👤 本地账号</div>
             </div>
-            <div class="switch-text">
-                还没有账号？<span onclick="showRegister()">立即注册</span>
+            <div id="phoneLoginPanel">
+                <div id="cloudNotReady" class="cloud-tip hidden">短信登录服务正在开通中，可先用「本地账号」，数据不受影响。</div>
+                <label class="form-label">手机号</label>
+                <input class="form-input" type="tel" maxlength="11" placeholder="请输入手机号" id="phoneInput" inputmode="numeric">
+                <label class="form-label">短信验证码</label>
+                <div class="sms-row">
+                    <input class="form-input" type="text" maxlength="6" placeholder="6 位验证码" id="smsCodeInput" inputmode="numeric">
+                    <button class="btn-mini sms-btn" id="smsSendBtn" onclick="sendSmsCode()">获取验证码</button>
+                </div>
+                <button class="btn-primary cloud-login-btn" id="phoneLoginBtn" onclick="phoneLogin()">登录 / 注册</button>
+                <div class="cloud-hint">未注册的手机号将自动创建账号；日记等数据云端同步，换手机也能用。</div>
+                <button class="sheet-cancel" style="margin-top:12px;" onclick="closeLogin()">取消</button>
+            </div>
+            <div id="localLoginPanel" class="hidden">
+                <label class="form-label">用户名</label>
+                <input class="form-input" placeholder="请输入用户名" id="loginUser">
+                <label class="form-label">密码</label>
+                <input class="form-input" type="password" placeholder="请输入密码" id="loginPwd">
+                <div class="popup-btns">
+                    <button class="btn-cancel" onclick="closeLogin()">取消</button>
+                    <button class="btn-confirm" onclick="doLogin()">登录</button>
+                </div>
+                <div class="switch-text">
+                    还没有账号？<span onclick="showRegister()">立即注册</span>
+                </div>
             </div>
         </div>
     </div>
@@ -1256,6 +1356,19 @@ function loadJSON(name, def) {
 }
 function saveJSON(name, val) {
     localStorage.setItem(getKey(name), JSON.stringify(val));
+    markCloudDirty(name); // 云端会话中自动标记并安排推送
+}
+// ---- 本地密码安全加固（SHA-256 存储，老明文自动升级） ----
+async function sha256Hex(s) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+async function hashPassword(p) { return 'sha256:' + (await sha256Hex(p)); }
+async function verifyPassword(stored, input) {
+    if (typeof stored === 'string' && stored.startsWith('sha256:')) {
+        return stored.slice(7) === (await sha256Hex(input));
+    }
+    return stored === input; // 旧版明文兼容
 }
 function fmtDT(iso) {
     const d = new Date(iso);
@@ -1588,13 +1701,21 @@ function renderAll() {
     updateUserBtn();
 }
 function init() {
+    // 云端会话自动恢复（手机号账号）
+    if (cloudAuth && cloudAuth.phone && cloudAuth.exp * 1000 > Date.now() + 60000) {
+        currentUser = cloudAuth.phone;
+        localStorage.setItem('curUser', cloudAuth.phone);
+        lastSyncedAt = Number(localStorage.getItem(syncAtKey())) || null;
+        loadDirtyFlag();
+    }
     loadAllData();
     randomHeroText();
     renderAll();
     document.getElementById('diaryDate').value = todayStr();
     updateHrtVisibility();
+    switchLoginTab('phone'); // 登录弹层默认手机号 tab
+    cloudRestore();          // 静默拉取云端数据（异步）
 }
-init();
 // ========== 页面切换 ==========
 function switchTab(tab) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1655,11 +1776,23 @@ function toggleHrtSetting() {
 }
 function updateUserBtn() {
     const btn = document.getElementById('userBtn');
-    btn.textContent = currentUser ? currentUser + ' · 退出' : '登录';
+    if (!currentUser) { btn.textContent = '登录'; return; }
+    if (cloudAuth && currentUser === cloudAuth.phone) {
+        btn.innerHTML = '☁ ' + esc(maskPhone(currentUser)) + '<span class="cloud-status">已同步</span> · 退出';
+    } else {
+        btn.textContent = currentUser + ' · 退出';
+    }
 }
 function userBtnClick() {
     if (!currentUser) { show('loginMask'); return; }
-    if (confirm('退出当前账号？')) {
+    const isCloud = cloudAuth && currentUser === cloudAuth.phone;
+    if (confirm(isCloud ? '退出当前账号（云端数据保留，下次登录可恢复）？' : '退出当前账号？')) {
+        if (isCloud) {
+            cloudAuth = null;
+            localStorage.removeItem('cloudAuth');
+            clearTimeout(pushTimer);
+            localDirty = false;
+        }
         currentUser = null;
         localStorage.removeItem('curUser');
         loadAllData();
@@ -1667,12 +1800,19 @@ function userBtnClick() {
         updateHrtVisibility(); // 退出后 HRT 板块随之隐藏
     }
 }
-function doLogin() {
+async function doLogin() {
     const u = document.getElementById('loginUser').value.trim();
     const p = document.getElementById('loginPwd').value;
     if (!u || !p) { alert('请输入用户名和密码'); return; }
     const users = getUsers();
-    if (users[u] !== p) { alert('用户名或密码错误'); return; }
+    if (!(await verifyPassword(users[u], p))) { alert('用户名或密码错误'); return; }
+    // 旧明文密码顺手升级为哈希存储
+    if (typeof users[u] === 'string' && !users[u].startsWith('sha256:')) {
+        users[u] = await hashPassword(p);
+        localStorage.setItem('appUsers', JSON.stringify(users));
+    }
+    // 切换到本地账号：退出云端会话（数据保留在云端）
+    if (cloudAuth) { cloudAuth = null; localStorage.removeItem('cloudAuth'); }
     currentUser = u;
     localStorage.setItem('curUser', u);
     document.getElementById('loginPwd').value = '';
@@ -1685,7 +1825,7 @@ function doLogin() {
 function showRegister() { hide('loginMask'); show('regMask'); }
 function closeRegister() { hide('regMask'); }
 function closeLogin() { hide('loginMask'); }
-function doRegister() {
+async function doRegister() {
     const u = document.getElementById('regUser').value.trim();
     const p = document.getElementById('regPwd').value;
     const p2 = document.getElementById('regPwd2').value;
@@ -1695,9 +1835,10 @@ function doRegister() {
     const users = getUsers();
     if (users[u]) { alert('用户名已存在'); return; }
     const mtf = document.getElementById('regMtf').checked;
-    users[u] = p;
+    users[u] = await hashPassword(p); // 哈希存储
     localStorage.setItem('appUsers', JSON.stringify(users));
     setMtfFlag(u, mtf); // 记住 MTF 身份
+    if (cloudAuth) { cloudAuth = null; localStorage.removeItem('cloudAuth'); }
     currentUser = u;
     localStorage.setItem('curUser', u);
     hide('regMask');
@@ -1705,6 +1846,337 @@ function doRegister() {
     renderAll();
     updateHrtVisibility(); // 注册后立即应用 HRT 板块显隐
     alert('注册成功，已自动登录');
+}
+
+// ========== 云端账号（手机号短信登录 + 数据云同步，方案B） ==========
+const CLOUD_API_BASE = ''; // 后端部署后填入，如 https://life-diary-api.xxxxx.workers.dev
+const CLOUD_SYNC_KEYS = ['records', 'treeholes', 'countdowns', 'diaries', 'diaryCollections'];
+let cloudAuth = null;        // {phone, token, uid, exp（秒）}
+let lastSyncedAt = null;     // 上次成功同步的服务端版本号
+let localDirty = false;      // 本地是否有未推送修改
+let pushTimer = null;
+let cloudBusy = false;
+let smsCountdownTimer = null;
+
+try { cloudAuth = JSON.parse(localStorage.getItem('cloudAuth') || 'null'); } catch (e) { cloudAuth = null; }
+// 会话过期则清除（提前 1 分钟）
+if (cloudAuth && (!cloudAuth.exp || cloudAuth.exp * 1000 < Date.now() + 60000)) {
+    cloudAuth = null;
+    localStorage.removeItem('cloudAuth');
+}
+
+function cloudReady() { return !!CLOUD_API_BASE; }
+function cloudSession() { return !!(cloudAuth && cloudAuth.token && currentUser === cloudAuth.phone); }
+function maskPhone(p) { return String(p || '').replace(/^(\d{3})\d{4}(\d{4})$/, '$1****$2'); }
+function dirtyKey() { return 'cloudDirty_' + (cloudAuth ? cloudAuth.phone : ''); }
+function syncAtKey() { return 'cloudSyncAt_' + (cloudAuth ? cloudAuth.phone : ''); }
+function loadDirtyFlag() { localDirty = !!(cloudAuth && localStorage.getItem(dirtyKey())); }
+function persistSyncAt() { if (cloudAuth) localStorage.setItem(syncAtKey(), String(lastSyncedAt || 0)); }
+function clearDirty() { localDirty = false; if (cloudAuth) localStorage.removeItem(dirtyKey()); }
+
+async function cloudFetch(method, path, body, withAuth) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (withAuth !== false && cloudAuth && cloudAuth.token) {
+        headers['Authorization'] = 'Bearer ' + cloudAuth.token;
+    }
+    return fetch(CLOUD_API_BASE + path, {
+        method: method,
+        headers: headers,
+        body: body === undefined ? undefined : JSON.stringify(body)
+    });
+}
+function gatherLocalBlob() {
+    const blob = {};
+    CLOUD_SYNC_KEYS.forEach(k => { blob[k] = loadJSON(k, []); });
+    return blob;
+}
+function hasAnyLocalData(user) {
+    const old = currentUser;
+    let found = false;
+    CLOUD_SYNC_KEYS.forEach(k => {
+        try {
+            const v = JSON.parse(localStorage.getItem(k + '_' + (user || 'guest')));
+            if (Array.isArray(v) && v.length) found = true;
+        } catch (e) { }
+    });
+    void old;
+    return found;
+}
+function copyLocalData(fromUser, toUser) {
+    CLOUD_SYNC_KEYS.forEach(k => {
+        try {
+            const v = localStorage.getItem(k + '_' + (fromUser || 'guest'));
+            if (v !== null) localStorage.setItem(k + '_' + toUser, v);
+        } catch (e) { }
+    });
+}
+function writeCloudBlobToLocal(blob) {
+    CLOUD_SYNC_KEYS.forEach(k => {
+        if (blob && Array.isArray(blob[k])) saveJSON(k, blob[k]);
+    });
+}
+
+// ---- 登录弹层：切换 手机号 / 本地账号 ----
+function switchLoginTab(which) {
+    const phoneTab = document.getElementById('tabPhone');
+    const localTab = document.getElementById('tabLocal');
+    const phonePanel = document.getElementById('phoneLoginPanel');
+    const localPanel = document.getElementById('localLoginPanel');
+    const notReady = document.getElementById('cloudNotReady');
+    if (which === 'phone') {
+        phoneTab.classList.add('active'); localTab.classList.remove('active');
+        phonePanel.classList.remove('hidden'); localPanel.classList.add('hidden');
+    } else {
+        localTab.classList.add('active'); phoneTab.classList.remove('active');
+        localPanel.classList.remove('hidden'); phonePanel.classList.add('hidden');
+    }
+    if (notReady) notReady.classList.toggle('hidden', cloudReady());
+}
+
+// ---- 发送验证码（60 秒倒计时） ----
+async function sendSmsCode() {
+    if (!cloudReady()) { alert('短信登录服务暂未开通'); return; }
+    const phone = document.getElementById('phoneInput').value.trim();
+    if (!/^1[3-9]\d{9}$/.test(phone)) { alert('请输入正确的 11 位手机号'); return; }
+    const btn = document.getElementById('smsSendBtn');
+    btn.disabled = true;
+    btn.textContent = '发送中…';
+    try {
+        const res = await cloudFetch('POST', '/api/auth/sms/send', { phone: phone }, false);
+        const j = await res.json().catch(() => ({}));
+        if (res.ok) {
+            alert('验证码已发送，请查收短信（5 分钟内有效）');
+            startSmsCountdown(60);
+        } else if (res.status === 429) {
+            alert(j.error || '发送太频繁，请稍后再试');
+            if (j.retry_after) startSmsCountdown(Math.max(5, Math.ceil(j.retry_after / 1000)));
+            else btn.disabled = false, btn.textContent = '获取验证码';
+        } else {
+            alert(j.error || '发送失败，请稍后再试');
+            btn.disabled = false; btn.textContent = '获取验证码';
+        }
+    } catch (e) {
+        alert('网络异常，请检查网络后重试');
+        btn.disabled = false; btn.textContent = '获取验证码';
+    }
+}
+function startSmsCountdown(seconds) {
+    const btn = document.getElementById('smsSendBtn');
+    if (!btn) return;
+    clearInterval(smsCountdownTimer);
+    let left = seconds;
+    btn.disabled = true;
+    btn.textContent = left + 's 后重发';
+    smsCountdownTimer = setInterval(() => {
+        left--;
+        if (left <= 0) {
+            clearInterval(smsCountdownTimer);
+            btn.disabled = false;
+            btn.textContent = '获取验证码';
+        } else {
+            btn.textContent = left + 's 后重发';
+        }
+    }, 1000);
+}
+
+// ---- 手机号登录 ----
+async function phoneLogin() {
+    if (!cloudReady()) { alert('短信登录服务暂未开通'); return; }
+    const phone = document.getElementById('phoneInput').value.trim();
+    const code = document.getElementById('smsCodeInput').value.trim();
+    if (!/^1[3-9]\d{9}$/.test(phone)) { alert('请输入正确的 11 位手机号'); return; }
+    if (!/^\d{6}$/.test(code)) { alert('请输入 6 位短信验证码'); return; }
+    const btn = document.getElementById('phoneLoginBtn');
+    btn.disabled = true; btn.textContent = '登录中…';
+    try {
+        const res = await cloudFetch('POST', '/api/auth/sms/login', { phone: phone, code: code }, false);
+        const j = await res.json().catch(() => ({}));
+        if (!res.ok) { alert(j.error || '登录失败，请稍后再试'); return; }
+        // 登录成功：建立云端会话
+        const oldUser = currentUser && currentUser !== phone ? currentUser : null;
+        const oldHadData = oldUser ? hasAnyLocalData(oldUser) : false;
+        cloudAuth = { phone: phone, token: j.token, uid: j.user_id, exp: j.expires_at };
+        localStorage.setItem('cloudAuth', JSON.stringify(cloudAuth));
+        currentUser = phone;
+        localStorage.setItem('curUser', phone);
+        lastSyncedAt = Number(localStorage.getItem(syncAtKey())) || null;
+        loadDirtyFlag();
+        document.getElementById('smsCodeInput').value = '';
+        hide('loginMask');
+        loadAllData();
+        renderAll();
+        updateHrtVisibility();
+        updateUserBtn();
+        // 拉取云端数据
+        const pulled = await cloudPullRaw();
+        if (pulled === null) {
+            // 云端为空：首次使用
+            if (oldHadData && !hasAnyLocalData(phone)) {
+                if (confirm('检测到本机账号「' + oldUser + '」已有数据。\n是否把这些数据上传到云端账号继续使用？')) {
+                    copyLocalData(oldUser, phone);
+                    loadAllData();
+                    renderAll();
+                    localDirty = true;
+                    localStorage.setItem(dirtyKey(), '1');
+                    await cloudPushNow();
+                    alert('数据已上传云端 ✓');
+                }
+            } else if (hasAnyLocalData(phone)) {
+                // 本地有数据（如曾迁移中断），静默补传
+                localDirty = true;
+                localStorage.setItem(dirtyKey(), '1');
+                await cloudPushNow();
+            }
+        } else {
+            await applyCloudData(pulled.data, pulled.updated_at, true);
+        }
+        renderAll();
+        updateUserBtn();
+    } catch (e) {
+        alert('网络异常，登录失败，请重试');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '登录 / 注册';
+    }
+}
+
+// ---- 拉取云端（原始） ----
+async function cloudPullRaw() {
+    if (!cloudSession()) return undefined;
+    const res = await cloudFetch('GET', '/api/data');
+    if (res.status === 401) {
+        cloudAuth = null;
+        localStorage.removeItem('cloudAuth');
+        currentUser = null;
+        localStorage.removeItem('curUser');
+        loadAllData();
+        renderAll();
+        updateUserBtn();
+        updateHrtVisibility();
+        alert('云端登录已过期，请重新登录');
+        return undefined;
+    }
+    if (!res.ok) return undefined;
+    const j = await res.json().catch(() => null);
+    if (!j) return undefined;
+    if (j.data === null || j.data === undefined) return null;
+    let parsed = null;
+    try { parsed = JSON.parse(j.data); } catch (e) { parsed = null; }
+    return { data: parsed, updated_at: j.updated_at };
+}
+
+// ---- 应用云端数据到本地（含冲突处理） ----
+async function applyCloudData(serverData, serverAt, interactive) {
+    if (serverData === null) return;
+    if (localDirty && hasAnyLocalData(cloudAuth.phone)) {
+        if (!interactive) { /* 非交互场景保守起见提示 */ }
+        const keepCloud = confirm('云端有其他设备的修改，本设备也有未同步的修改。\n\n【确定】使用云端版本（本设备未同步的修改将被覆盖）\n【取消】保留本设备版本（将覆盖云端）');
+        if (keepCloud) {
+            writeCloudBlobToLocal(serverData);
+            clearDirty();
+            lastSyncedAt = serverAt;
+            persistSyncAt();
+            loadAllData();
+            renderAll();
+            alert('已使用云端版本 ✓');
+        } else {
+            lastSyncedAt = serverAt;
+            persistSyncAt();
+            await cloudPushNow();
+            alert('本设备版本已覆盖云端 ✓');
+        }
+    } else {
+        writeCloudBlobToLocal(serverData);
+        clearDirty();
+        lastSyncedAt = serverAt;
+        persistSyncAt();
+        loadAllData();
+        renderAll();
+    }
+}
+
+// ---- 启动时静默恢复云端会话 ----
+async function cloudRestore() {
+    if (!cloudReady() || !cloudSession()) return;
+    try {
+        const pulled = await cloudPullRaw();
+        if (pulled && pulled.data !== null) {
+            await applyCloudData(pulled.data, pulled.updated_at, false);
+        } else if (pulled === null && localDirty) {
+            // 云端空但本地有未同步数据 → 补传
+            await cloudPushNow();
+        }
+    } catch (e) { /* 网络异常时静默，稍后保存动作会再触发 */ }
+}
+
+// ---- 推送本地数据到云端 ----
+async function cloudPushNow() {
+    if (!cloudSession() || cloudBusy) return;
+    cloudBusy = true;
+    try {
+        await cloudPutInternal(lastSyncedAt, 0);
+    } finally {
+        cloudBusy = false;
+    }
+}
+// 实际执行 PUT；depth 防冲突循环。返回 'ok' | 'retry' | 'auth' | 'error'
+async function cloudPutInternal(base, depth) {
+    const blob = gatherLocalBlob();
+    const res = await cloudFetch('PUT', '/api/data', { data: blob, base_updated_at: base });
+    if (res.status === 409) {
+        const j = await res.json().catch(() => null);
+        if (!j) return 'error';
+        if (depth >= 1) {
+            // 二次冲突：对齐基线，保留脏标记，等待下次推送自动重试
+            lastSyncedAt = j.updated_at;
+            persistSyncAt();
+            return 'retry';
+        }
+        let parsed = null;
+        try { parsed = j.data === null ? null : JSON.parse(j.data); } catch (e) { }
+        const keepCloud = confirm('云端有其他设备的修改，本设备也有未同步的修改。\n\n【确定】使用云端版本（本设备未同步的修改将被覆盖）\n【取消】保留本设备版本（将覆盖云端）');
+        if (keepCloud) {
+            if (parsed) writeCloudBlobToLocal(parsed);
+            clearDirty();
+            lastSyncedAt = j.updated_at;
+            persistSyncAt();
+            loadAllData();
+            renderAll();
+            alert('已使用云端版本 ✓');
+            return 'ok';
+        }
+        const r = await cloudPutInternal(j.updated_at, 1); // 用服务端基线直接覆盖云端
+        if (r === 'ok') alert('本设备版本已覆盖云端 ✓');
+        return r;
+    }
+    if (res.ok) {
+        const j = await res.json().catch(() => null);
+        if (j) { lastSyncedAt = j.updated_at; persistSyncAt(); }
+        clearDirty();
+        return 'ok';
+    }
+    if (res.status === 401) {
+        // 会话过期：交给下次登录处理，避免打扰
+        cloudAuth = null;
+        localStorage.removeItem('cloudAuth');
+        return 'auth';
+    }
+    // 其他错误：静默保留 dirty，下次保存重试
+    return 'error';
+}
+function scheduleCloudPush() {
+    if (!cloudSession()) return;
+    clearTimeout(pushTimer);
+    pushTimer = setTimeout(() => { cloudPushNow(); }, 2500);
+}
+
+// ---- 数据保存钩子：云端会话中自动标记并推送 ----
+function markCloudDirty(name) {
+    if (!cloudReady() || !cloudSession()) return;
+    if (CLOUD_SYNC_KEYS.indexOf(name) === -1) return;
+    localDirty = true;
+    localStorage.setItem(dirtyKey(), '1');
+    scheduleCloudPush();
 }
 // ========== 小确幸记录功能 ==========
 function selectMood(btn) {
@@ -2632,6 +3104,8 @@ function importBackup() {
     };
     input.click();
 }
+// 初始化放在脚本最末：确保所有顶层变量（含云端会话）声明完毕后再执行
+init();
 </script>
 
 <!-- ===== HRT 内嵌工具层（整合版新增） ===== -->
