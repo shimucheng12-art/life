@@ -739,6 +739,32 @@
             flex-wrap: wrap;
         }
         .diary-ops { display: flex; gap: 8px; }
+        /* ===== 日记折叠（默认只留日期，点击展开） ===== */
+        .diary-item.collapsed .diary-detail { display: none; }
+        .diary-item.collapsed .diary-head { border-radius: 18px; }
+        .diary-head { cursor: pointer; }
+        .diary-head:hover .diary-date-day { color: #be185d; }
+        .diary-chevron {
+            margin-left: auto;
+            flex-shrink: 0;
+            width: 22px;
+            height: 22px;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            color: #b6bcc5;
+            font-size: 11px;
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+        .diary-chevron:hover { color: #d9466f; background: #fdf2f6; }
+        .diary-item.collapsed .diary-chevron { transform: rotate(-90deg); }
+        .diary-time-hint {
+            display: block;
+            font-size: 11px;
+            color: #d8a5b5;
+            margin-top: 2px;
+            letter-spacing: 0.3px;
+        }
         /* ===== 日记收纳 ===== */
         .diary-coll-badge {
             display: inline-flex;
@@ -1265,6 +1291,7 @@ let diaryCollections = [];      // [{id, name, createTime}]
 let currentDiaryFilter = 'all'; // 'all' | 'none' | 收纳夹 id
 let diarySearchText = '';
 let collectingDiaryId = null;   // 正在选择收纳目标的日记 id
+const expandedDiaryIds = new Set(); // 已展开的日记 id（默认全部折叠，仅本次会话内记忆）
 // ========== 小六壬传统命理数据 ==========
 const guaData = [
     {
@@ -2291,10 +2318,23 @@ function cancelDiaryEdit() {
 function deleteDiary(id) {
     if (!confirm('确定删除这篇日记吗？删除后无法恢复。')) return;
     if (editingDiaryId === id) cancelDiaryEdit();
+    expandedDiaryIds.delete(id);
     diaries = diaries.filter(d => d.id !== id);
     saveJSON('diaries', diaries);
     renderDiaryFilter();
     renderDiaryList();
+}
+// 折叠/展开：默认只留日期行，点击后展开全文（DOM 原地切换，不重渲染）
+function toggleDiaryExpand(id) {
+    const item = document.getElementById('diary-item-' + id);
+    if (!item) return;
+    if (item.classList.contains('collapsed')) {
+        item.classList.remove('collapsed');
+        expandedDiaryIds.add(id);
+    } else {
+        item.classList.add('collapsed');
+        expandedDiaryIds.delete(id);
+    }
 }
 function renderDiaryList() {
     const box = document.getElementById('diaryList');
@@ -2329,40 +2369,54 @@ function renderDiaryList() {
             '</div>';
         return;
     }
-    const sorted = filtered.slice().sort((a, b) =>
-        (b.date + (b.createTime || '')).localeCompare(a.date + (a.createTime || '')));
+    // 排序：日期新的在前；同一天内按创建时间从早到晚
+    const sorted = filtered.slice().sort((a, b) => {
+        const da = a.date || '', db = b.date || '';
+        if (da !== db) return db.localeCompare(da);
+        return (a.createTime || '').localeCompare(b.createTime || '');
+    });
     const thisYear = String(new Date().getFullYear());
     box.innerHTML = sorted.map(d => {
         const yearPart = (d.date || '').slice(0, 4);
         const dayPart = (d.date || '').slice(5).replace('-', '/');
         const weekPart = weekdayOf(d.date) + (yearPart && yearPart !== thisYear ? ' · ' + yearPart : '');
+        // 创建时间（用于折叠态提示，取 HH:mm）
+        const cd = new Date(d.createTime);
+        const timeHint = (!isNaN(cd) && d.createTime)
+            ? pad2(cd.getHours()) + ':' + pad2(cd.getMinutes())
+            : '';
+        const isExpanded = expandedDiaryIds.has(d.id);
         const titleHtml = d.title ? '<span class="diary-title">' + esc(d.title) + '</span>'
             : '<span class="diary-title" style="color:#9ca3af; font-weight:400;">无题</span>';
         const timeText = fmtDT(d.createTime) + (d.updateTime ? ' · 编辑于 ' + fmtDT(d.updateTime) : '');
         const collHtml = d.collectionId && collById(d.collectionId)
-            ? '<span class="diary-coll-badge" title="点击换一个收纳夹" onclick="openCollectSheet(\'' + d.id + '\')">📁 ' + esc(collName(d.collectionId)) + '</span>'
+            ? '<span class="diary-coll-badge" title="点击换一个收纳夹" onclick="event.stopPropagation();openCollectSheet(\'' + d.id + '\')">📁 ' + esc(collName(d.collectionId)) + '</span>'
             : '';
-        return '<div class="diary-item">' +
-            '<div class="diary-head">' +
+        return '<div class="diary-item' + (isExpanded ? '' : ' collapsed') + '" id="diary-item-' + esc(d.id) + '">' +
+            '<div class="diary-head" onclick="toggleDiaryExpand(\'' + d.id + '\')" title="' + (isExpanded ? '收起' : '展开查看全文') + '">' +
                 '<div class="diary-date">' +
                     '<span class="diary-date-day">' + esc(dayPart) + '</span>' +
                     '<span class="diary-date-week">' + esc(weekPart) + '</span>' +
+                    (timeHint ? '<span class="diary-time-hint">' + esc(timeHint) + '</span>' : '') +
                 '</div>' +
                 '<div class="diary-body">' +
                     '<div class="diary-title-row">' +
                         '<span class="diary-mood">' + esc(d.mood || '🌤 平静') + '</span>' +
                         titleHtml +
                         collHtml +
+                        '<span class="diary-chevron">▾</span>' +
                     '</div>' +
-                    '<div class="diary-content">' + esc(d.content) + '</div>' +
-                    '<div class="diary-foot">' +
-                        '<span>' + timeText + '</span>' +
-                        '<span class="diary-ops">' +
-                            '<button class="btn-mini" onclick="openCollectSheet(\'' + d.id + '\')">收纳</button>' +
-                            '<button class="btn-mini" onclick="editDiary(\'' + d.id + '\')">编辑</button>' +
-                            '<button class="btn-del" onclick="deleteDiary(\'' + d.id + '\')">删除</button>' +
-                        '</span>' +
-                    '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div class="diary-detail">' +
+                '<div class="diary-content">' + esc(d.content) + '</div>' +
+                '<div class="diary-foot">' +
+                    '<span>' + timeText + '</span>' +
+                    '<span class="diary-ops">' +
+                        '<button class="btn-mini" onclick="openCollectSheet(\'' + d.id + '\')">收纳</button>' +
+                        '<button class="btn-mini" onclick="editDiary(\'' + d.id + '\')">编辑</button>' +
+                        '<button class="btn-del" onclick="deleteDiary(\'' + d.id + '\')">删除</button>' +
+                    '</span>' +
                 '</div>' +
             '</div>' +
         '</div>';
