@@ -2,12 +2,7 @@
 // 数值来源：上游 PKSharedCatalog.json（E2 家族与 T 家族均为官方锚定拟合值，MIT）。
 // EU / CPA 为本仓库重建时的近似补充（原实现已丢失），参数已按文献量级校准。
 
-import { Ester, ExtraKey, PKCustomParams, GEL_SITE_ORDER, GelSiteKey, SublingualTierParams, T_ESTERS } from './types';
-
-/** 是否睾酮家族酯 */
-export function isTestosteroneEster(ester: Ester | string): boolean {
-    return T_ESTERS.has(ester as any);
-}
+import { Ester, ExtraKey, PKCustomParams, GEL_SITE_ORDER, GelSiteKey, SublingualTierParams } from './types';
 
 // ---------- E2 核心参数 ----------
 export const CorePK = {

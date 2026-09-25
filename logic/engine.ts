@@ -350,4 +350,4 @@ export function getBioavailabilityMultiplier(route: Route, ester: Ester, extras:
     }
 }
 
-export { SL_TIER_ORDER };
+// 注：SL_TIER_ORDER 的导出以 logic/types.ts 为准（此处仅内部使用），避免 index.ts 重名冲突。
