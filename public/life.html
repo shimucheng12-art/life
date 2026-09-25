@@ -992,6 +992,13 @@
                 </div>
             </div>
             <div class="card">
+                <h3 class="section-title" style="font-size:22px; margin-bottom:10px;">HRT 用药记录板块</h3>
+                <div class="backup-desc" style="margin-bottom:12px;">
+                    HRT 板块默认隐藏，仅登录且勾选 MTF 身份的账号可见；也可在此手动切换。
+                </div>
+                <button id="hrtToggleBtn" class="btn-outline" onclick="toggleHrtSetting()">当前：隐藏（点击切换）</button>
+            </div>
+            <div class="card">
                 <h3 class="section-title" style="font-size:22px; margin-bottom:10px;">关于</h3>
                 <div class="backup-desc" style="margin-bottom:0;">
                     美好生活记录 · 本地版<br>
@@ -1028,6 +1035,10 @@
             <input class="form-input" type="password" placeholder="至少6位" id="regPwd">
             <label class="form-label">确认密码</label>
             <input class="form-input" type="password" placeholder="再次输入密码" id="regPwd2">
+            <label class="form-label" style="display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none; margin-bottom:4px;">
+                <input type="checkbox" id="regMtf" style="width:18px; height:18px; margin:0; flex:none; accent-color:#d4b078;">
+                我是 MTF（登录后显示 HRT 用药记录板块）
+            </label>
             <div class="popup-btns">
                 <button class="btn-cancel" onclick="closeRegister()">取消</button>
                 <button class="btn-confirm" onclick="doRegister()">注册</button>
@@ -1399,6 +1410,7 @@ function init() {
     randomHeroText();
     renderAll();
     document.getElementById('diaryDate').value = todayStr();
+    updateHrtVisibility();
 }
 init();
 // ========== 页面切换 ==========
@@ -1418,6 +1430,47 @@ function switchTab(tab) {
 function getUsers() {
     try { return JSON.parse(localStorage.getItem('appUsers') || '{}'); } catch (e) { return {}; }
 }
+// ========== HRT 板块可见性（登录 + MTF 身份双重控制，默认隐藏）==========
+function getMtfFlags() {
+    try { return JSON.parse(localStorage.getItem('mtfFlags') || '{}'); } catch (e) { return {}; }
+}
+function setMtfFlag(u, flag) {
+    const flags = getMtfFlags();
+    flags[u] = !!flag;
+    localStorage.setItem('mtfFlags', JSON.stringify(flags));
+}
+function hrtAllowed() {
+    if (!currentUser) return false;
+    const flags = getMtfFlags();
+    if (Object.prototype.hasOwnProperty.call(flags, currentUser)) return !!flags[currentUser];
+    // 老账号首次进入：询问一次并记住
+    const yes = confirm('是否显示 HRT 用药记录板块？\n仅 MTF 账号需要，选择后可在设置页更改。');
+    setMtfFlag(currentUser, yes);
+    return yes;
+}
+function updateHrtVisibility() {
+    const showHrt = hrtAllowed();
+    const tab = document.querySelector('.tab-item[data-tab="hrt"]');
+    const page = document.getElementById('page-hrt');
+    if (tab) tab.style.display = showHrt ? '' : 'none';
+    if (page) {
+        page.style.display = showHrt ? '' : 'none';
+        if (!showHrt && page.classList.contains('active')) {
+            page.classList.remove('active');
+            const activeTab = document.querySelector('.tab-item.active');
+            if (!activeTab || activeTab.dataset.tab === 'hrt') switchTab('home');
+        }
+    }
+    const btn = document.getElementById('hrtToggleBtn');
+    if (btn) btn.textContent = '当前：' + (showHrt ? '显示' : '隐藏') + '（点击切换）';
+}
+function toggleHrtSetting() {
+    if (!currentUser) { alert('请先登录再设置'); return; }
+    const flags = getMtfFlags();
+    const cur = !!flags[currentUser];
+    setMtfFlag(currentUser, !cur);
+    updateHrtVisibility();
+}
 function updateUserBtn() {
     const btn = document.getElementById('userBtn');
     btn.textContent = currentUser ? currentUser + ' · 退出' : '登录';
@@ -1429,6 +1482,7 @@ function userBtnClick() {
         localStorage.removeItem('curUser');
         loadAllData();
         renderAll();
+        updateHrtVisibility(); // 退出后 HRT 板块随之隐藏
     }
 }
 function doLogin() {
@@ -1443,6 +1497,7 @@ function doLogin() {
     hide('loginMask');
     loadAllData();
     renderAll();
+    updateHrtVisibility(); // 登录后按 MTF 身份决定 HRT 板块显隐
     alert('欢迎回来，' + u);
 }
 function showRegister() { hide('loginMask'); show('regMask'); }
@@ -1457,13 +1512,16 @@ function doRegister() {
     if (p !== p2) { alert('两次密码不一致'); return; }
     const users = getUsers();
     if (users[u]) { alert('用户名已存在'); return; }
+    const mtf = document.getElementById('regMtf').checked;
     users[u] = p;
     localStorage.setItem('appUsers', JSON.stringify(users));
+    setMtfFlag(u, mtf); // 记住 MTF 身份
     currentUser = u;
     localStorage.setItem('curUser', u);
     hide('regMask');
     loadAllData();
     renderAll();
+    updateHrtVisibility(); // 注册后立即应用 HRT 板块显隐
     alert('注册成功，已自动登录');
 }
 // ========== 小确幸记录功能 ==========
