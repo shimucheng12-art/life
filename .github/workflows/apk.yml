@@ -1,12 +1,9 @@
-name: Android APK
+name: Android APK（手动构建）
 
+# v1.5.4 起改为纯手动触发：正式发布使用本地稳定密钥签名（apk/build-manual.sh），
+# CI 的调试签名包仅供构建验证，不再自动发到 Releases（避免覆盖正式资产）。
 on:
   workflow_dispatch:
-  push:
-    branches: [master]
-    paths:
-      - 'apk/**'
-      - '.github/workflows/apk.yml'
 
 permissions:
   contents: write
@@ -37,26 +34,11 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: 构建 APK
+      - name: 构建 APK（调试签名，仅验证可编译）
         run: gradle -p apk assembleDebug --no-daemon
 
-      - name: 上传构建产物
+      - name: 上传构建产物（Artifact，不发Release）
         uses: actions/upload-artifact@v4
         with:
-          name: hrt-tracker-apk
+          name: hrt-tracker-debug-apk
           path: apk/app/build/outputs/apk/debug/app-debug.apk
-
-      - name: 发布到 Releases（公开下载）
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: apk-v1.5.3
-          name: 碎碎念 Android 安装包
-          body: |
-            1.5.3 更新：
-            1. 日记列表默认折叠：只显示日期卡片（含创建时间提示），点击展开查看全文，列表更清爽。
-            2. 同一天的日记按创建时间从早到晚排序。
-            调试签名的安装包，安装时允许「未知来源/安装未知应用」。
-            更新请先卸载旧版再安装（数据不受影响）。
-          files: apk/app/build/outputs/apk/debug/app-debug.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
