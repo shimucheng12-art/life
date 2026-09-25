@@ -14,6 +14,8 @@ permissions:
 jobs:
   apk:
     runs-on: ubuntu-latest
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
@@ -24,11 +26,9 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: 安装 Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: 接受许可并安装 SDK 组件
+      - name: 接受许可并补齐 SDK 组件（用 runner 预装 SDK）
         run: |
+          export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
           (yes | sdkmanager --licenses) > /dev/null || true
           sdkmanager "platforms;android-34" "build-tools;34.0.0" > /dev/null
 
