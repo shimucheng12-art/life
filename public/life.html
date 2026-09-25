@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#1c1a19">
+    <!-- iOS PWA：添加到主屏幕后全屏运行，有独立图标 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="碎碎念">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="apple-touch-icon" href="pwa/apple-touch-icon.png">
+    <link rel="manifest" href="manifest.webmanifest">
     <title>美好生活记录</title>
     <style>
         * {
@@ -17,12 +24,13 @@
             color: #3a332d;
             line-height: 1.7;
         }
-        /* ===== 顶部导航 ===== */
+        /* ===== 顶部导航（独立App模式下避开刘海状态栏）===== */
         .top-nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 14px 22px;
+            padding-top: calc(14px + env(safe-area-inset-top, 0px));
             background-color: #1c1a19;
             color: #f0e6d6;
             position: sticky;
@@ -3216,6 +3224,12 @@ init();
         hrtLoaded = true;
         document.getElementById('hrtLoadTip').style.display = 'none';
     }
+</script>
+<script>
+// PWA：注册 Service Worker（https 且非内嵌模式），离线也能打开
+if ('serviceWorker' in navigator && location.protocol === 'https:' && !/[?&]embed=/.test(location.search)) {
+    addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+}
 </script>
 </body>
 </html>
