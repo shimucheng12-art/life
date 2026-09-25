@@ -49,12 +49,12 @@ jobs:
       - name: 发布到 Releases（公开下载）
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: apk-v1.5.0
+          tag_name: apk-v1.5.1
           name: 碎碎念 Android 安装包
           body: |
-            新名字「碎碎念」+ 新日落图标。
+            修复：删除/退出等确认弹窗失效、图片上传与数据导入无法选择文件。
             调试签名的安装包，安装时允许「未知来源/安装未知应用」。
-            更新请先卸载旧版（HRT Tracker）再安装。
+            更新请先卸载旧版再安装（数据不受影响）。
           files: apk/app/build/outputs/apk/debug/app-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
