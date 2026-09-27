@@ -3,18 +3,18 @@
 # 用法: bash build_apk_manual.sh [工作区根目录]
 set -euo pipefail
 
-WS="${1:-/home/z/my-project/share/agent-model/6ab5f366f84758eee914ad89}"
-REPO="$WS/tmp/life-repo"
-SDK="$WS/tmp/android-sdk"
-BT="$SDK/android-14"            # build-tools 34
-JAR="$SDK/android-34/android.jar"
+WS="${1:-/home/z/my-project/share/agent-model/6ab8968a36e9969124d043eb}"
+REPO="$WS/tmp/life"
+SDK="$WS/tmp"
+BT="$SDK/bt-tools"                # build-tools 34
+JAR="$SDK/plat34x/android-34/android.jar"
 SRC="$REPO/apk/app/src/main"
 OUT="$WS/tmp/apk-stage"
 KEYS="$WS/download/碎碎念-APK签名密钥"
 KS="$KEYS/release.jks"
 KS_PASS="suinian2026!apk"
-VERSION_NAME="1.5.4"
-VERSION_CODE="6"
+VERSION_NAME="1.9.0"
+VERSION_CODE="7"
 
 rm -rf "$OUT"; mkdir -p "$OUT/gen" "$OUT/classes" "$OUT/build"
 mkdir -p "$KEYS"
