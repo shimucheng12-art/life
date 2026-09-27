@@ -1034,6 +1034,14 @@
             border-color: rgba(224, 145, 145, 0.6);
             box-shadow: 0 0 10px 1px rgba(220, 150, 135, 0.28);
         }
+        /* 拍岸闪光：波前触到屏幕边缘时，沿边缘亮起的一道柔光 */
+        .ripple-edge-flash {
+            position: fixed;
+            border-radius: 999px;
+            pointer-events: none;
+            z-index: 10000;
+            box-shadow: 0 0 9px 1px rgba(235, 170, 152, 0.45);
+        }
         /* 键盘可达性：焦点轮廓（触屏不触发） */
         .ripple-on:focus-visible {
             outline: 2px solid rgba(217, 70, 111, 0.55);
@@ -1041,7 +1049,7 @@
         }
         /* 系统级减弱动态效果时不播放波纹 */
         @media (prefers-reduced-motion: reduce) {
-            .ripple-wave, .ripple-ring, .ripple-ambient-glow, .ripple-ambient-ring { display: none; }
+            .ripple-wave, .ripple-ring, .ripple-ambient-glow, .ripple-ambient-ring, .ripple-edge-flash { display: none; }
         }
     </style>
 </head>
@@ -3248,10 +3256,11 @@ init();
 
     // 空白处点击：一抹玫瑰金光晕 + 三圈由粉到金的涟漪从点击中心荡开
     var AMBIENT_RINGS = [
-        { d: 200, color: 'rgba(224, 145, 145, 0.62)', bw: 2,   dur: 820,  delay: 40,  peak: 0.95 },
-        { d: 320, color: 'rgba(238, 198, 178, 0.50)', bw: 1.6, dur: 980,  delay: 170, peak: 0.80 },
-        { d: 460, color: 'rgba(228, 182, 132, 0.36)', bw: 1.2, dur: 1150, delay: 310, peak: 0.60 }
+        { d: 200, c: [224, 145, 145], a: 0.62, bw: 2,   dur: 820,  delay: 40,  peak: 0.95 },
+        { d: 320, c: [238, 198, 178], a: 0.50, bw: 1.6, dur: 980,  delay: 170, peak: 0.80 },
+        { d: 460, c: [228, 182, 132], a: 0.36, bw: 1.2, dur: 1150, delay: 310, peak: 0.60 }
     ];
+    function rgba(c, a) { return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')'; }
     function spawnAmbientRipple(x, y) {
         if (REDUCED_MOTION) return;
         var pos = 'left:' + x + 'px;top:' + y + 'px;';
@@ -3269,7 +3278,7 @@ init();
         AMBIENT_RINGS.forEach(function (cfg) {
             var ring = document.createElement('span');
             ring.className = 'ripple-ambient-ring';
-            ring.style.cssText = pos + 'width:' + cfg.d + 'px;height:' + cfg.d + 'px;border-width:' + cfg.bw + 'px;border-color:' + cfg.color;
+            ring.style.cssText = pos + 'width:' + cfg.d + 'px;height:' + cfg.d + 'px;border-width:' + cfg.bw + 'px;border-color:' + rgba(cfg.c, cfg.a);
             document.body.appendChild(ring);
             ring.animate([
                 { transform: 'translate(-50%,-50%) scale(0.14)', opacity: 0 },
@@ -3277,6 +3286,63 @@ init();
                 { transform: 'translate(-50%,-50%) scale(1)', opacity: 0 }
             ], { duration: cfg.dur, delay: cfg.delay, easing: 'cubic-bezier(0.16, 0.6, 0.3, 1)', fill: 'backwards' }).onfinish = function () { ring.remove(); };
         });
+        // 波碰到屏幕边缘：拍岸闪光 + 反射回波荡回来
+        spawnEdgeEchoes(x, y);
+    }
+
+    // ===== 碰壁反弹（镜像源法：反射波 = 从“波源关于边缘的镜像点”发出的波） =====
+    function spawnEdgeEchoes(x, y) {
+        var W = window.innerWidth, H = window.innerHeight;
+        var edges = [
+            { vert: true,  wall: 0, dist: x,     mx: -x,        my: y,           fx: 0, fy: y },  // 左
+            { vert: true,  wall: W, dist: W - x, mx: 2 * W - x, my: y,           fx: W, fy: y },  // 右
+            { vert: false, wall: 0, dist: y,     mx: x,         my: -y,          fx: x, fy: 0 },   // 上
+            { vert: false, wall: H, dist: H - y, mx: x,         my: 2 * H - y,   fx: x, fy: H }    // 下
+        ];
+        edges.forEach(function (edge) {
+            AMBIENT_RINGS.forEach(function (cfg, i) {
+                var v = cfg.d * 0.43 / cfg.dur;      // 该圈波前速度(px/ms)
+                var maxR = cfg.d * 0.5;              // 该圈最终半径
+                if (edge.dist >= maxR) return;       // 这圈到不了这条边，不反弹
+                var tHit = cfg.delay + edge.dist / v; // 波前触壁时刻
+                if (i === 0) setTimeout(function () { flashEdge(edge); }, tHit);          // 最强圈：拍岸闪光
+                setTimeout(function () { spawnEchoRing(edge, cfg); }, tHit);               // 每圈：反射回波
+            });
+        });
+    }
+
+    // 拍岸闪光：触壁点沿边缘亮起一道柔和的玫瑰金光
+    function flashEdge(edge) {
+        if (REDUCED_MOTION) return;
+        var span = 150;
+        var f = document.createElement('span');
+        f.className = 'ripple-edge-flash';
+        if (edge.vert) { // 左/右边缘：竖向光条
+            var ex = Math.min(Math.max(edge.wall, 0), window.innerWidth);
+            f.style.cssText = 'left:' + (ex - 1.5) + 'px;top:' + (edge.fy - span / 2) + 'px;width:3px;height:' + span + 'px;background:linear-gradient(180deg,transparent,' + rgba([240, 195, 175], 0.9) + ',transparent)';
+        } else {        // 上/下边缘：横向光条
+            var ey = Math.min(Math.max(edge.wall, 0), window.innerHeight);
+            f.style.cssText = 'top:' + (ey - 1.5) + 'px;left:' + (edge.fx - span / 2) + 'px;height:3px;width:' + span + 'px;background:linear-gradient(90deg,transparent,' + rgba([240, 195, 175], 0.9) + ',transparent)';
+        }
+        document.body.appendChild(f);
+        f.animate([
+            { opacity: 0 }, { opacity: 1, offset: 0.25 }, { opacity: 0 }
+        ], { duration: 620, easing: 'ease-out' }).onfinish = function () { f.remove(); };
+    }
+
+    // 反射回波：从镜像点荡回屏幕内的一圈淡涟漪（视觉上= 波从边缘弹回来）
+    function spawnEchoRing(edge, cfg) {
+        if (REDUCED_MOTION) return;
+        var ring = document.createElement('span');
+        ring.className = 'ripple-ambient-ring';
+        var d = cfg.d * 0.85;
+        ring.style.cssText = 'left:' + edge.mx + 'px;top:' + edge.my + 'px;width:' + d + 'px;height:' + d + 'px;border-width:' + (cfg.bw * 0.8) + 'px;border-color:' + rgba(cfg.c, cfg.a * 0.6);
+        document.body.appendChild(ring);
+        ring.animate([
+            { transform: 'translate(-50%,-50%) scale(0.14)', opacity: 0 },
+            { transform: 'translate(-50%,-50%) scale(0.38)', opacity: cfg.peak * 0.72, offset: 0.2 },
+            { transform: 'translate(-50%,-50%) scale(1)', opacity: 0 }
+        ], { duration: cfg.dur * 0.95, easing: 'cubic-bezier(0.16, 0.6, 0.3, 1)' }).onfinish = function () { ring.remove(); };
     }
 
     // 按压缩放：快速压入、弹性回弹（用 WAAPI，不覆盖元素原有 CSS transition）
