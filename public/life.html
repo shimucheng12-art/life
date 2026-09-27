@@ -3629,7 +3629,24 @@ init();
 <script>
 // PWA：注册 Service Worker（https 且非内嵌模式），离线也能打开
 if ('serviceWorker' in navigator && location.protocol === 'https:' && !/[?&]embed=/.test(location.search)) {
-    addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+    // PWA 自动更新：新版本落地后，App 回前台时自动检查、新 SW 接管时页面自刷新一次
+    (function () {
+        var reloaded = false;
+        navigator.serviceWorker.addEventListener('controllerchange', function () {
+            if (reloaded) return;
+            reloaded = true;
+            location.reload();
+        });
+        addEventListener('load', function () {
+            // updateViaCache:'none' —— sw.js 每次都走网络，不吃 HTTP 缓存
+            navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(function (reg) {
+                // App 从后台回前台时主动检查一次更新（驻留后台时落地的版本能立刻被发现）
+                document.addEventListener('visibilitychange', function () {
+                    if (document.visibilityState === 'visible' && reg.update) reg.update().catch(function () {});
+                });
+            }).catch(function () {});
+        });
+    })();
 }
 </script>
 </body>
