@@ -3293,6 +3293,178 @@ init();
 </script>
 
 <script>
+// ===== 轻盈温馨音效引擎（Web Audio 本地合成：零外部资源、离线可用、内嵌预览不发声） =====
+var SFX = (function () {
+    'use strict';
+    var EMBED = /[?&]embed=/.test(location.search);
+    var ctx = null, master = null;
+    var VOL = 0.2; // 总音量：轻盈不扰
+
+    function ac() {
+        if (EMBED) return null;
+        try {
+            if (!ctx) {
+                var AC = window.AudioContext || window.webkitAudioContext;
+                if (!AC) return null;
+                ctx = new AC();
+                var comp = ctx.createDynamicsCompressor(); // 多音叠加不削波
+                comp.threshold.value = -18; comp.ratio.value = 6;
+                master = ctx.createGain();
+                master.gain.value = VOL;
+                master.connect(comp); comp.connect(ctx.destination);
+            }
+            if (ctx.state === 'suspended') ctx.resume();
+            return ctx;
+        } catch (e) { return null; }
+    }
+
+    // —— 基础发声器 ——
+    function tone(type, f0, f1, t0, dur, vol) {
+        var o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = type;
+        o.frequency.setValueAtTime(f0, t0);
+        if (f1) o.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
+        g.gain.setValueAtTime(0, t0);
+        g.gain.linearRampToValueAtTime(vol, t0 + 0.006);
+        g.gain.exponentialRampToValueAtTime(0.0008, t0 + dur);
+        o.connect(g); g.connect(master);
+        o.start(t0); o.stop(t0 + dur + 0.05);
+    }
+
+    // 卡林巴琴式的温暖木音（金色按钮用）
+    function kalimba(f, t0, vol, lp) {
+        var o = ctx.createOscillator(), g = ctx.createGain(), flt = ctx.createBiquadFilter();
+        o.type = 'triangle'; o.frequency.value = f;
+        flt.type = 'lowpass'; flt.frequency.value = lp || 2300; flt.Q.value = 0.7;
+        g.gain.setValueAtTime(0, t0);
+        g.gain.linearRampToValueAtTime(vol, t0 + 0.008);
+        g.gain.exponentialRampToValueAtTime(0.0008, t0 + 0.42);
+        o.connect(flt); flt.connect(g); g.connect(master);
+        o.start(t0); o.stop(t0 + 0.5);
+        tone('sine', f / 2, 0, t0, 0.3, vol * 0.32); // 低八度衬底更暖
+    }
+
+    // 圆润的木琴点（页签与一般按钮）
+    function marimba(f, t0, vol) {
+        tone('sine', f, 0, t0, 0.22, vol);
+        tone('sine', f * 3.93, 0, t0, 0.07, vol * 0.14); // 琴槌敲出的泛音
+    }
+
+    // 小水泡（心情/筛选标签）
+    function pop(f, t0, vol) {
+        var o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(f * 1.22, t0);
+        o.frequency.exponentialRampToValueAtTime(f, t0 + 0.045);
+        g.gain.setValueAtTime(0, t0);
+        g.gain.linearRampToValueAtTime(vol, t0 + 0.005);
+        g.gain.exponentialRampToValueAtTime(0.0008, t0 + 0.14);
+        o.connect(g); g.connect(master);
+        o.start(t0); o.stop(t0 + 0.2);
+    }
+
+    // 纸页轻翻（日记类）
+    var noiseBuf = null;
+    function brush(t0, vol) {
+        if (!noiseBuf) {
+            var n = ctx.sampleRate * 0.25 | 0;
+            noiseBuf = ctx.createBuffer(1, n, ctx.sampleRate);
+            var d = noiseBuf.getChannelData(0);
+            for (var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+        }
+        var src = ctx.createBufferSource(), g = ctx.createGain(), bp = ctx.createBiquadFilter();
+        src.buffer = noiseBuf;
+        bp.type = 'bandpass'; bp.frequency.value = 900; bp.Q.value = 0.9;
+        g.gain.setValueAtTime(0, t0);
+        g.gain.linearRampToValueAtTime(vol, t0 + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0008, t0 + 0.17);
+        src.connect(bp); bp.connect(g); g.connect(master);
+        src.start(t0); src.stop(t0 + 0.22);
+    }
+
+    // 水滴（空白处点击）：频率下滑模拟落水
+    function drop(f1, f2, t0, dur, vol) {
+        var o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(f1, t0);
+        o.frequency.exponentialRampToValueAtTime(f2, t0 + dur * 0.8);
+        g.gain.setValueAtTime(0, t0);
+        g.gain.linearRampToValueAtTime(vol, t0 + 0.004);
+        g.gain.exponentialRampToValueAtTime(0.0008, t0 + dur);
+        o.connect(g); g.connect(master);
+        o.start(t0); o.stop(t0 + dur + 0.05);
+        tone('sine', f2 * 2.01, 0, t0 + 0.02, dur * 0.6, vol * 0.18); // 水面微光
+    }
+
+    // 小铃铛（解梦热词）
+    function shimmer(f, t0, vol) {
+        tone('sine', f, 0, t0, 0.5, vol);
+        tone('sine', f * 2.005, 0, t0 + 0.012, 0.42, vol * 0.3);
+    }
+
+    // 每个按键独立的音高：按文字哈希在 C 大调五声音阶里取音（怎么按都在调上、同一键音高固定）
+    var SCALE = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.51];
+    function noteFor(el) {
+        var s = (el.textContent || el.value || el.title || el.className || '?').replace(/\s+/g, '').slice(0, 30);
+        var h = 5381;
+        for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
+        return SCALE[h % SCALE.length];
+    }
+
+    function has(el, cls) { return el.classList.contains(cls); }
+
+    // 按键音：按控件类型分音色；音高随按键文字固定，听熟了能听出是哪个键
+    function button(el) {
+        var c = ac(); if (!c) return;
+        var t = c.currentTime + 0.001;
+        var n = noteFor(el);
+        if (has(el, 'btn-primary')) {
+            kalimba(n, t, 0.5, 2500);                 // 金色主按钮：温暖木音 + 低五度和声
+            kalimba(n * 2 / 3, t + 0.015, 0.2, 1600);
+        } else if (has(el, 'btn-outline')) {
+            kalimba(n, t, 0.34, 1800);                // 次按钮：同琴、更轻
+        } else if (has(el, 'tab-item')) {
+            marimba(n, t, 0.4);                       // 页签：木点 + 三度倚音（翻页的小跳音）
+            marimba(n * 1.26, t + 0.055, 0.16);
+        } else if (has(el, 'mood-tag')) {
+            pop(n * 1.5, t, 0.42);                    // 心情标签：一串不同音的小水泡
+        } else if (has(el, 'filter-tag') || has(el, 'login-tab')) {
+            pop(n, t, 0.34);
+        } else if (has(el, 'diary-head') || has(el, 'diary-coll-badge') || has(el, 'diary-chevron')) {
+            brush(t, 0.32);                          // 日记：纸页轻翻 + 一点低音
+            marimba(SCALE[0] / 2, t + 0.02, 0.14);
+        } else if (has(el, 'image-upload-area')) {
+            brush(t, 0.3);
+            marimba(SCALE[2] / 2, t + 0.03, 0.18);
+        } else if (el.closest && el.closest('.dream-hot-tags')) {
+            shimmer(n * 2, t, 0.22);                  // 解梦热词：小铃铛
+        } else if (el.closest && el.closest('.switch-text')) {
+            marimba(n * 2, t, 0.3);                  // 开关：清脆一点
+        } else {
+            marimba(n, t, 0.3);                       // 其余按钮：通用木点
+        }
+    }
+
+    // 空白处点击：水滴声。中央清亮、边缘低回带回声（呼应涟漪碰壁荡回）
+    function blank(x, y) {
+        var c = ac(); if (!c) return;
+        var t = c.currentTime + 0.001;
+        var W = window.innerWidth, H = window.innerHeight;
+        var d = Math.min(x, W - x, y, H - y);
+        if (d < 110) {
+            drop(560, 240, t, 0.3, 0.5);              // 靠边：低回的水滴 + 一声轻回声
+            drop(470, 205, t + 0.11, 0.26, 0.2);
+        } else {
+            drop(830, 415, t, 0.22, 0.5);             // 中央：清亮水滴 + 一丝水光
+            shimmer(1318.5, t + 0.05, 0.07);
+        }
+    }
+
+    return { button: button, blank: blank, _state: function () { return ctx ? ctx.state : 'none'; } };
+})();
+</script>
+
+<script>
 // ===== 点击手感 & 水波荡漾特效（事件委托，动态渲染出的元素同样生效） =====
 (function () {
     'use strict';
@@ -3491,11 +3663,12 @@ init();
         if (e.clientX < 0 || e.clientY < 0 || e.clientX >= root.clientWidth || e.clientY >= root.clientHeight) return;
         var el = findTarget(e.target);
         if (el) {
-            // 交互元素：原有水波 + 按压手感
+            // 交互元素：原有水波 + 按压手感 + 轻盈按键音
             prepareHost(el);
             activePresses[e.pointerId] = el;
             spawnRipple(el, e.clientX, e.clientY);
             pressIn(el);
+            SFX.button(el);
             try { if (navigator.vibrate) navigator.vibrate(8); } catch (err) { /* 无振动权限时静默 */ }
             return;
         }
@@ -3504,6 +3677,7 @@ init();
         if (t && t.nodeType === 1 && typeof t.closest === 'function' &&
             !t.closest('input, textarea, select, option, label, [contenteditable]')) {
             spawnAmbientRipple(e.clientX, e.clientY);
+            SFX.blank(e.clientX, e.clientY); // 中央清亮水滴 / 靠边低回带轻回声
         }
     }, { passive: true });
 

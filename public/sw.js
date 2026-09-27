@@ -1,5 +1,5 @@
 // 碎碎念 PWA Service Worker：网络优先 + 离线兜底（API 跨域不缓存）
-const CACHE = 'suinian-v1.7.1';
+const CACHE = 'suinian-v1.8.0';
 const SHELL = ['./life.html', './manifest.webmanifest', './pwa/icon-192.png', './pwa/icon-512.png', './pwa/apple-touch-icon.png', './pwa/icon-maskable-512.png'];
 
 self.addEventListener('install', e => {
