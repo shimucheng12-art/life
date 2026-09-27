@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 点击水波纹时的轻微振动反馈（普通权限，无需运行时申请） -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:label="@string/app_name"

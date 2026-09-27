@@ -982,6 +982,43 @@
             .dream-list { grid-template-columns: 1fr; }
             .image-preview-wrap { grid-template-columns: repeat(3, 1fr); }
         }
+        /* ===== 点击手感 & 水波荡漾特效 ===== */
+        /* 可交互宿主：去掉系统灰色点按高亮 + 消除双击缩放延迟 + 防误选文本 */
+        .ripple-on {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        /* 行内标签启用按压形变需先变为 inline-block */
+        .switch-text span.ripple-on, .dream-hot-tags span.ripple-on { display: inline-block; }
+        /* 水波主体：柔和的实心波 */
+        .ripple-wave {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            background: radial-gradient(circle, currentColor 0%, currentColor 42%, transparent 70%);
+            transform: translate(-50%, -50%) scale(0);
+            z-index: 0;
+        }
+        /* 涟漪环：营造一圈圈荡开的水纹层次 */
+        .ripple-ring {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            border: 1.5px solid currentColor;
+            transform: translate(-50%, -50%) scale(0);
+            z-index: 0;
+        }
+        /* 键盘可达性：焦点轮廓（触屏不触发） */
+        .ripple-on:focus-visible {
+            outline: 2px solid rgba(217, 70, 111, 0.55);
+            outline-offset: 2px;
+        }
+        /* 系统级减弱动态效果时不播放波纹 */
+        @media (prefers-reduced-motion: reduce) {
+            .ripple-wave, .ripple-ring { display: none; }
+        }
     </style>
 </head>
 <body>
@@ -3114,6 +3151,128 @@ function importBackup() {
 }
 // 初始化放在脚本最末：确保所有顶层变量（含云端会话）声明完毕后再执行
 init();
+</script>
+
+<script>
+// ===== 点击手感 & 水波荡漾特效（事件委托，动态渲染出的元素同样生效） =====
+(function () {
+    'use strict';
+
+    // 需要水波反馈的可交互元素
+    var RIPPLE_TARGETS = 'button, .tab-item, .mood-tag, .filter-tag, .login-tab, .sheet-item, .diary-coll-badge, .diary-chevron, .diary-head, .image-upload-area, .dream-hot-tags span, .switch-text span';
+
+    var REDUCED_MOTION = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var pressAnims = new WeakMap(); // 宿主 -> 按压/回弹动画
+    var activePresses = {};         // pointerId -> 正在按压的宿主
+
+    function findTarget(node) {
+        if (!node || node.nodeType !== 1 || typeof node.closest !== 'function') return null;
+        var el = node.closest(RIPPLE_TARGETS);
+        if (!el || el.disabled) return null;
+        return el;
+    }
+
+    // 首次交互时补上承载波纹所需的定位与裁剪（不动已有特殊定位的元素）
+    function prepareHost(el) {
+        if (el.classList.contains('ripple-on')) return;
+        el.classList.add('ripple-on');
+        var cs = getComputedStyle(el);
+        if (cs.position === 'static') el.style.position = 'relative';
+        if (cs.overflow !== 'hidden') el.style.overflow = 'hidden';
+    }
+
+    // 在点击点荡开一道水波 + 两圈涟漪
+    function spawnRipple(el, clientX, clientY) {
+        if (REDUCED_MOTION) return;
+        var rect = el.getBoundingClientRect();
+        if (rect.width < 2 || rect.height < 2) return;
+        var x = clientX - rect.left;
+        var y = clientY - rect.top;
+        // 波纹直径：恰好覆盖“点击点到最远角落”的整段距离
+        var dx = Math.max(x, rect.width - x);
+        var dy = Math.max(y, rect.height - y);
+        var d = Math.sqrt(dx * dx + dy * dy) * 2;
+        // 大面积宿主（如日记行）波纹更轻，小按钮更明显
+        var area = rect.width * rect.height;
+        var op = area > 24000 ? 0.16 : (area > 8000 ? 0.22 : 0.32);
+
+        var wave = document.createElement('span');
+        wave.className = 'ripple-wave';
+        wave.style.cssText = 'left:' + x + 'px;top:' + y + 'px;width:' + d + 'px;height:' + d + 'px;opacity:' + op;
+        el.appendChild(wave);
+        wave.animate([
+            { transform: 'translate(-50%,-50%) scale(0.12)' },
+            { transform: 'translate(-50%,-50%) scale(0.62)', offset: 0.45 },
+            { transform: 'translate(-50%,-50%) scale(1)' }
+        ], { duration: 620, easing: 'cubic-bezier(0.2, 0.55, 0.25, 1)' }).onfinish = function () { wave.remove(); };
+
+        for (var i = 0; i < 2; i++) {
+            (function (idx) {
+                var ring = document.createElement('span');
+                ring.className = 'ripple-ring';
+                var rd = d * (0.7 + idx * 0.16);
+                ring.style.cssText = 'left:' + x + 'px;top:' + y + 'px;width:' + rd + 'px;height:' + rd + 'px';
+                el.appendChild(ring);
+                ring.animate([
+                    { transform: 'translate(-50%,-50%) scale(0.22)', opacity: 0 },
+                    { transform: 'translate(-50%,-50%) scale(0.3)', opacity: op * (idx ? 0.45 : 0.7), offset: 0.16 },
+                    { transform: 'translate(-50%,-50%) scale(1.05)', opacity: 0 }
+                ], { duration: 760 + idx * 150, delay: 120 + idx * 140, easing: 'cubic-bezier(0.16, 0.6, 0.3, 1)', fill: 'backwards' }).onfinish = function () { ring.remove(); };
+            })(i);
+        }
+    }
+
+    // 按压缩放：快速压入、弹性回弹（用 WAAPI，不覆盖元素原有 CSS transition）
+    function pressIn(el) {
+        if (REDUCED_MOTION) return;
+        var prev = pressAnims.get(el);
+        if (prev) prev.cancel();
+        var big = el.classList.contains('diary-head');
+        var anim = el.animate(
+            [{ transform: 'scale(1)' }, { transform: 'scale(' + (big ? 0.985 : 0.955) + ')' }],
+            { duration: 110, easing: 'cubic-bezier(0.3, 0, 0.8, 0.4)', fill: 'forwards' }
+        );
+        pressAnims.set(el, anim);
+    }
+
+    function pressOut(el) {
+        var pressed = pressAnims.get(el);
+        if (!pressed) return;
+        pressAnims.delete(el);
+        if (REDUCED_MOTION) { pressed.cancel(); return; }
+        var big = el.classList.contains('diary-head');
+        var release = el.animate(
+            [{ transform: 'scale(' + (big ? 0.985 : 0.955) + ')' }, { transform: 'scale(1)' }],
+            { duration: 420, easing: 'cubic-bezier(0.34, 1.45, 0.64, 1)' }
+        );
+        release.onfinish = release.oncancel = function () { pressed.cancel(); };
+        pressAnims.set(el, release); // 快速连点时先取消上一次回弹
+    }
+
+    function clearPress(e) {
+        var el = activePresses[e.pointerId];
+        if (el) { delete activePresses[e.pointerId]; pressOut(el); }
+    }
+
+    document.addEventListener('pointerdown', function (e) {
+        if (e.button !== 0) return; // 只响应主键/触摸/笔
+        var el = findTarget(e.target);
+        if (!el) return;
+        prepareHost(el);
+        activePresses[e.pointerId] = el;
+        spawnRipple(el, e.clientX, e.clientY);
+        pressIn(el);
+        try { if (navigator.vibrate) navigator.vibrate(8); } catch (err) { /* 无振动权限时静默 */ }
+    }, { passive: true });
+
+    document.addEventListener('pointerup', clearPress, { passive: true });
+    document.addEventListener('pointercancel', clearPress, { passive: true });
+    window.addEventListener('blur', function () {
+        // 指针离开窗口时兜底复位，避免元素卡在按压态
+        Object.keys(activePresses).forEach(function (id) { pressOut(activePresses[id]); });
+        activePresses = {};
+    });
+})();
 </script>
 
 <!-- ===== HRT 内嵌工具层（整合版新增） ===== -->
