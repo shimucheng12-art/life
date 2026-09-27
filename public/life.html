@@ -1010,6 +1010,30 @@
             transform: translate(-50%, -50%) scale(0);
             z-index: 0;
         }
+        /* ===== 空白处点击：玫瑰金涟漪（挂在 body 上自由荡开，不挡任何交互） ===== */
+        .ripple-ambient-glow, .ripple-ambient-ring {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(0);
+            z-index: 10000;
+            will-change: transform, opacity;
+        }
+        /* 中心一抹玫瑰金光晕：香槟金亮心 → 玫瑰粉 → 淡出 */
+        .ripple-ambient-glow {
+            background: radial-gradient(circle,
+                rgba(255, 228, 210, 0.78) 0%,
+                rgba(235, 170, 152, 0.38) 38%,
+                rgba(196, 118, 122, 0.15) 62%,
+                rgba(196, 118, 122, 0) 72%);
+        }
+        /* 外圈涟漪：由玫瑰粉渐变到淡金，带一圈柔光 */
+        .ripple-ambient-ring {
+            border-style: solid;
+            border-width: 2px;
+            border-color: rgba(224, 145, 145, 0.6);
+            box-shadow: 0 0 10px 1px rgba(220, 150, 135, 0.28);
+        }
         /* 键盘可达性：焦点轮廓（触屏不触发） */
         .ripple-on:focus-visible {
             outline: 2px solid rgba(217, 70, 111, 0.55);
@@ -1017,7 +1041,7 @@
         }
         /* 系统级减弱动态效果时不播放波纹 */
         @media (prefers-reduced-motion: reduce) {
-            .ripple-wave, .ripple-ring { display: none; }
+            .ripple-wave, .ripple-ring, .ripple-ambient-glow, .ripple-ambient-ring { display: none; }
         }
     </style>
 </head>
@@ -3222,6 +3246,39 @@ init();
         }
     }
 
+    // 空白处点击：一抹玫瑰金光晕 + 三圈由粉到金的涟漪从点击中心荡开
+    var AMBIENT_RINGS = [
+        { d: 200, color: 'rgba(224, 145, 145, 0.62)', bw: 2,   dur: 820,  delay: 40,  peak: 0.95 },
+        { d: 320, color: 'rgba(238, 198, 178, 0.50)', bw: 1.6, dur: 980,  delay: 170, peak: 0.80 },
+        { d: 460, color: 'rgba(228, 182, 132, 0.36)', bw: 1.2, dur: 1150, delay: 310, peak: 0.60 }
+    ];
+    function spawnAmbientRipple(x, y) {
+        if (REDUCED_MOTION) return;
+        var pos = 'left:' + x + 'px;top:' + y + 'px;';
+        // 中心光晕：落水点的一抹玫瑰金
+        var glow = document.createElement('span');
+        glow.className = 'ripple-ambient-glow';
+        glow.style.cssText = pos + 'width:120px;height:120px';
+        document.body.appendChild(glow);
+        glow.animate([
+            { transform: 'translate(-50%,-50%) scale(0.22)', opacity: 0 },
+            { transform: 'translate(-50%,-50%) scale(0.72)', opacity: 1, offset: 0.28 },
+            { transform: 'translate(-50%,-50%) scale(1.15)', opacity: 0 }
+        ], { duration: 700, easing: 'cubic-bezier(0.2, 0.55, 0.25, 1)' }).onfinish = function () { glow.remove(); };
+        // 三圈涟漪：玫瑰粉 → 香槟粉 → 淡金，一圈圈荡开
+        AMBIENT_RINGS.forEach(function (cfg) {
+            var ring = document.createElement('span');
+            ring.className = 'ripple-ambient-ring';
+            ring.style.cssText = pos + 'width:' + cfg.d + 'px;height:' + cfg.d + 'px;border-width:' + cfg.bw + 'px;border-color:' + cfg.color;
+            document.body.appendChild(ring);
+            ring.animate([
+                { transform: 'translate(-50%,-50%) scale(0.14)', opacity: 0 },
+                { transform: 'translate(-50%,-50%) scale(0.36)', opacity: cfg.peak, offset: 0.18 },
+                { transform: 'translate(-50%,-50%) scale(1)', opacity: 0 }
+            ], { duration: cfg.dur, delay: cfg.delay, easing: 'cubic-bezier(0.16, 0.6, 0.3, 1)', fill: 'backwards' }).onfinish = function () { ring.remove(); };
+        });
+    }
+
     // 按压缩放：快速压入、弹性回弹（用 WAAPI，不覆盖元素原有 CSS transition）
     function pressIn(el) {
         if (REDUCED_MOTION) return;
@@ -3256,13 +3313,25 @@ init();
 
     document.addEventListener('pointerdown', function (e) {
         if (e.button !== 0) return; // 只响应主键/触摸/笔
+        // 点在滚动条或视口外时不产生任何涟漪
+        var root = document.documentElement;
+        if (e.clientX < 0 || e.clientY < 0 || e.clientX >= root.clientWidth || e.clientY >= root.clientHeight) return;
         var el = findTarget(e.target);
-        if (!el) return;
-        prepareHost(el);
-        activePresses[e.pointerId] = el;
-        spawnRipple(el, e.clientX, e.clientY);
-        pressIn(el);
-        try { if (navigator.vibrate) navigator.vibrate(8); } catch (err) { /* 无振动权限时静默 */ }
+        if (el) {
+            // 交互元素：原有水波 + 按压手感
+            prepareHost(el);
+            activePresses[e.pointerId] = el;
+            spawnRipple(el, e.clientX, e.clientY);
+            pressIn(el);
+            try { if (navigator.vibrate) navigator.vibrate(8); } catch (err) { /* 无振动权限时静默 */ }
+            return;
+        }
+        // 空白处：玫瑰金涟漪从点击中心荡开（表单控件、可编辑区、滚动内容区不打扰）
+        var t = e.target;
+        if (t && t.nodeType === 1 && typeof t.closest === 'function' &&
+            !t.closest('input, textarea, select, option, label, [contenteditable]')) {
+            spawnAmbientRipple(e.clientX, e.clientY);
+        }
     }, { passive: true });
 
     document.addEventListener('pointerup', clearPress, { passive: true });
