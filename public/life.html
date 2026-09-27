@@ -135,22 +135,91 @@
             justify-content: center;
             gap: 10px;
             padding: 22px 16px;
-            background: #fff;
+            background: var(--tagbar-bg, #fff);
             flex-wrap: wrap;
-            border-bottom: 1px solid #eef0f4;
+            border-bottom: 1px solid var(--tagbar-line, #eef0f4);
+            position: relative;
+            transition: background 0.9s ease, border-color 0.9s ease;
+        }
+        /* 时段氛围光（晨光/暮色），铺在栏底不挡交互 */
+        .tab-bar::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background: var(--tagbar-glow, none);
         }
         .tab-item {
             padding: 10px 24px;
-            background: #f5f7fa;
+            background: var(--tag-pill-bg, #f5f7fa);
+            border: 1px solid var(--tag-pill-border, transparent);
             border-radius: 999px;
             font-size: 16px;
             cursor: pointer;
             transition: 0.2s;
-            color: #6b7280;
+            color: var(--tag-pill-text, #6b7280);
+            position: relative;
+            z-index: 1;
         }
         .tab-item.active {
-            background: #d9466f;
-            color: #fff;
+            background: var(--tag-active-bg, #d9466f);
+            color: var(--tag-active-text, #fff);
+            border-color: var(--tag-active-border, transparent);
+            box-shadow: var(--tag-active-shadow, none);
+        }
+        /* ===== 标签栏时段主题（跟随现实时间自动切换） ===== */
+        /* 早晨 5-11 点 · 图2 湖面晨雾：晨雾灰蓝 + 淡鹅黄日出 */
+        body.tag-morning {
+            --tagbar-bg: linear-gradient(180deg, #e8edf1 0%, #d7e1e9 55%, #cad7e1 100%);
+            --tagbar-line: #b7c7d4;
+            --tagbar-glow: radial-gradient(56% 95% at 50% 0%, rgba(245, 222, 166, 0.50), rgba(245, 222, 166, 0) 72%);
+            --tag-pill-bg: rgba(255, 255, 255, 0.55);
+            --tag-pill-text: #58697b;
+            --tag-pill-border: rgba(255, 255, 255, 0.62);
+            --tag-active-bg: linear-gradient(135deg, #f5e0a4, #e3bf69);
+            --tag-active-text: #57492b;
+            --tag-active-border: rgba(214, 178, 96, 0.75);
+            --tag-active-shadow: 0 2px 12px rgba(226, 190, 104, 0.38);
+        }
+        /* 午后 11-17 点 · 图2 湖面天光：更清亮的灰蓝 */
+        body.tag-noon {
+            --tagbar-bg: linear-gradient(180deg, #edf3f7 0%, #e1eaF1 60%, #d5e1e9 100%);
+            --tagbar-line: #b1c4d3;
+            --tagbar-glow: radial-gradient(62% 95% at 50% 0%, rgba(250, 236, 192, 0.42), rgba(250, 236, 192, 0) 72%);
+            --tag-pill-bg: rgba(255, 255, 255, 0.62);
+            --tag-pill-text: #526879;
+            --tag-pill-border: rgba(255, 255, 255, 0.68);
+            --tag-active-bg: linear-gradient(135deg, #f7e5ae, #e7c670);
+            --tag-active-text: #554828;
+            --tag-active-border: rgba(219, 186, 104, 0.78);
+            --tag-active-shadow: 0 2px 12px rgba(231, 198, 112, 0.40);
+        }
+        /* 傍晚 17-22 点 · 图3 城市日落：暗夜蓝底 + 暮光橙 */
+        body.tag-sunset {
+            --tagbar-bg: linear-gradient(180deg, #3a4163 0%, #2b3152 55%, #232948 100%);
+            --tagbar-line: #171c34;
+            --tagbar-glow: radial-gradient(75% 105% at 50% -10%, rgba(231, 126, 62, 0.42), rgba(231, 126, 62, 0) 66%);
+            --tag-pill-bg: rgba(255, 255, 255, 0.08);
+            --tag-pill-text: #b9c0d4;
+            --tag-pill-border: rgba(255, 255, 255, 0.10);
+            --tag-active-bg: linear-gradient(135deg, #ea9552, #cc6536);
+            --tag-active-text: #fff5e8;
+            --tag-active-border: rgba(255, 178, 120, 0.38);
+            --tag-active-shadow: 0 2px 14px rgba(224, 130, 68, 0.48);
+        }
+        /* 深夜 22-5 点 · 图3 入夜：更深邃的靛蓝，橙光收拢 */
+        body.tag-night {
+            --tagbar-bg: linear-gradient(180deg, #262c49 0%, #1e2440 60%, #191e37 100%);
+            --tagbar-line: #12172c;
+            --tagbar-glow: radial-gradient(70% 100% at 50% -10%, rgba(200, 110, 70, 0.24), rgba(200, 110, 70, 0) 60%);
+            --tag-pill-bg: rgba(255, 255, 255, 0.05);
+            --tag-pill-text: #99a1bb;
+            --tag-pill-border: rgba(255, 255, 255, 0.08);
+            --tag-active-bg: linear-gradient(135deg, #d1804c, #b25c34);
+            --tag-active-text: #f7ecdf;
+            --tag-active-border: rgba(255, 170, 120, 0.30);
+            --tag-active-shadow: 0 2px 10px rgba(200, 112, 60, 0.36);
         }
         /* ===== 内容容器 ===== */
         .container {
@@ -3183,6 +3252,44 @@ function importBackup() {
 }
 // 初始化放在脚本最末：确保所有顶层变量（含云端会话）声明完毕后再执行
 init();
+</script>
+
+<script>
+// ===== 功能标签栏时段主题：跟随现实时间自动换装 =====
+// 早晨 5-11 点 · 图2 湖面晨雾（晨雾灰蓝 + 淡鹅黄）
+// 午后 11-17 点 · 图2 湖面天光（清亮灰蓝）
+// 傍晚 17-22 点 · 图3 城市日落（暗夜蓝 + 暮光橙）
+// 深夜 22-5 点 · 图3 入夜（深邃靛蓝，橙光收拢）
+// 调试/预览：URL 加 ?tagtheme=morning|noon|sunset|night 可强制指定
+(function () {
+    'use strict';
+    var SLOTS = ['morning', 'noon', 'sunset', 'night'];
+    var CLASSES = SLOTS.map(function (s) { return 'tag-' + s; });
+    var FORCED = (function () {
+        try {
+            var v = new URLSearchParams(location.search).get('tagtheme');
+            return SLOTS.indexOf(v) >= 0 ? v : null;
+        } catch (e) { return null; }
+    })();
+
+    function slotOfHour(h) {
+        if (h >= 5 && h < 11) return 'morning';
+        if (h >= 11 && h < 17) return 'noon';
+        if (h >= 17 && h < 22) return 'sunset';
+        return 'night';
+    }
+
+    function applyTabTheme() {
+        var slot = FORCED || slotOfHour(new Date().getHours());
+        var cls = 'tag-' + slot;
+        if (document.body.classList.contains(cls)) return;
+        CLASSES.forEach(function (c) { document.body.classList.remove(c); });
+        document.body.classList.add(cls);
+    }
+
+    applyTabTheme();
+    setInterval(applyTabTheme, 60000); // 每分钟校准，跨过整点自动换装
+})();
 </script>
 
 <script>
