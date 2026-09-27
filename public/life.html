@@ -1324,6 +1324,24 @@
             </div>
             <h3 class="section-title" style="margin-top:30px;">我的倒数日</h3>
             <div id="cdList"></div>
+            <!-- 时间胶囊：写给未来的信 + 可封存琴声 -->
+            <h3 class="section-title" style="margin-top:34px;">🕰 时间胶囊</h3>
+            <div class="card" style="padding:20px 18px;">
+                <div class="backup-desc" style="margin-bottom:12px;">
+                    写一封信给未来的自己，设定开启的日子。也可以把<b>演奏模式里录的琴声</b>一起封进去——
+                    到了那天，听见的是当时弹琴的自己。
+                </div>
+                <label class="form-label">给未来的信 · 标题</label>
+                <input class="form-input" placeholder="例如：写给一年后的我" id="capTitle">
+                <label class="form-label">想说的话</label>
+                <textarea class="form-input" id="capContent" rows="4" placeholder="现在的我……"></textarea>
+                <label class="form-label">开启日期（到了才能看）</label>
+                <input class="form-input" type="date" id="capDate">
+                <label class="form-label">封存一段琴声（可选）</label>
+                <select class="form-input" id="capMelody"></select>
+                <button class="btn-primary" style="width:100%;" onclick="addCapsule()">🔒 封存胶囊</button>
+            </div>
+            <div id="capList" style="margin-top:16px;"></div>
         </div>
         <!-- HRT 跳转入口 -->
         <div class="page" id="page-hrt">
@@ -1375,6 +1393,40 @@
         </div>
         <!-- 设置与备份 -->
         <div class="page" id="page-settings">
+            <div class="card" style="text-align:center; padding:28px 22px;">
+                <h3 class="section-title" style="font-size:22px; margin-bottom:6px;">📊 年度碎碎念报告</h3>
+                <div class="backup-desc" style="margin-bottom:14px;">
+                    这一年你记下的日子、心情、倾诉和琴声，都帮你数好了。
+                </div>
+                <button class="btn-primary" style="width:100%;" onclick="openAnnualReport()">翻开这一年的碎碎念</button>
+            </div>
+            <div class="card backup-card">
+                <h3 class="section-title" style="font-size:22px; margin-bottom:10px;">🎹 声音与琴键</h3>
+                <div class="sfx-set-row">
+                    <span class="sfx-set-label">点击音效</span>
+                    <button id="sfxOnBtn" class="sfx-toggle" onclick="toggleSfxSetting('on')">开启（点击切换）</button>
+                </div>
+                <div class="sfx-set-row">
+                    <span class="sfx-set-label">音量</span>
+                    <input type="range" id="sfxVolRange" min="0" max="100" value="20" style="flex:1; accent-color:#e8a0a8;" oninput="setSfxVolume(this.value)">
+                </div>
+                <div class="sfx-set-row">
+                    <span class="sfx-set-label">深夜自动静音<span class="sfx-set-sub">23:00–7:00</span></span>
+                    <button id="sfxNightBtn" class="sfx-toggle" onclick="toggleSfxSetting('nightMute')">关闭（点击切换）</button>
+                </div>
+                <div class="sfx-set-row">
+                    <span class="sfx-set-label">触摸振动</span>
+                    <button id="sfxVibBtn" class="sfx-toggle" onclick="toggleSfxSetting('vib')">开启（点击切换）</button>
+                </div>
+                <div class="sfx-set-row">
+                    <span class="sfx-set-label">琴声音阶</span>
+                    <button id="sfxScaleBtn" class="sfx-toggle" onclick="cycleSfxScale()">大调（点击切换）</button>
+                </div>
+                <div class="backup-desc" style="margin:10px 0 0;">
+                    长按屏幕空白处 0.5 秒，可进入<b>演奏模式</b>——整屏变琴键，可录音、封存进时间胶囊。
+                </div>
+                <button class="btn-outline" style="width:100%; margin-top:10px;" onclick="openPerfMode()">🎹 打开演奏模式</button>
+            </div>
             <div class="card backup-card">
                 <h3 class="section-title" style="font-size:22px; margin-bottom:10px;">数据备份与恢复</h3>
                 <div class="backup-desc">
@@ -1397,7 +1449,7 @@
             <div class="card">
                 <h3 class="section-title" style="font-size:22px; margin-bottom:10px;">关于</h3>
                 <div class="backup-desc" style="margin-bottom:0;">
-                    美好生活记录 · 本地版<br>
+                    美好生活记录 · v2.0.0<br>
                     所有数据仅保存在你的浏览器中，不会上传到任何服务器。<br><br>
                     <span style="color:#999; font-size:13px;">HRT 记录功能已跳转至独立工具站点；解梦、小六壬仅供民俗娱乐。</span>
                 </div>
@@ -1845,6 +1897,7 @@ function renderAll() {
     updateCategoryFilter();
     updateTreeholeCategoryFilter();
     updateUserBtn();
+    try { if (window.v2Refresh) window.v2Refresh(); } catch (e) {} // v2.0：琴声/时间胶囊同步刷新
 }
 function init() {
     // 云端会话自动恢复（手机号账号）
@@ -1873,6 +1926,7 @@ function switchTab(tab) {
     if (tab === 'home') {
         randomHeroText();
     }
+    try { SFX.scene(tab); } catch (e) {} // 每页一个声场：切换页签时混响渐变换装
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 // ========== 账号 ==========
@@ -1996,7 +2050,7 @@ async function doRegister() {
 
 // ========== 云端账号（手机号短信登录 + 数据云同步，方案B） ==========
 const CLOUD_API_BASE = 'https://life-diary-api-icegmnxkgp.cn-hangzhou.fcapp.run'; // 阿里云函数计算（国内直连）
-const CLOUD_SYNC_KEYS = ['records', 'treeholes', 'countdowns', 'diaries', 'diaryCollections'];
+const CLOUD_SYNC_KEYS = ['records', 'treeholes', 'countdowns', 'diaries', 'diaryCollections', 'melodies', 'capsules'];
 let cloudAuth = null;        // {phone, token, uid, exp（秒）}
 let lastSyncedAt = null;     // 上次成功同步的服务端版本号
 let localDirty = false;      // 本地是否有未推送修改
@@ -3202,7 +3256,7 @@ function searchDreamTag(tag) {
 function exportBackup() {
     const data = {
         app: '美好生活记录',
-        version: 2,
+        version: 3,
         user: currentUser || 'guest',
         exportedAt: new Date().toISOString(),
         data: {
@@ -3210,7 +3264,9 @@ function exportBackup() {
             treeholes: treeholes,
             countdowns: countdowns,
             diaries: diaries,
-            diaryCollections: diaryCollections
+            diaryCollections: diaryCollections,
+            melodies: loadJSON('melodies', []),
+            capsules: loadJSON('capsules', [])
         }
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -3242,7 +3298,10 @@ function importBackup() {
             if (Array.isArray(d.countdowns)) { countdowns = d.countdowns; saveJSON('countdowns', countdowns); }
             if (Array.isArray(d.diaries)) { diaries = d.diaries; saveJSON('diaries', diaries); }
             if (Array.isArray(d.diaryCollections)) { diaryCollections = d.diaryCollections; saveJSON('diaryCollections', diaryCollections); }
+            if (Array.isArray(d.melodies)) saveJSON('melodies', d.melodies);
+            if (Array.isArray(d.capsules)) saveJSON('capsules', d.capsules);
             cancelDiaryEdit();
+            loadAllData();
             renderAll();
             alert('导入成功 ✓');
         };
@@ -3293,17 +3352,46 @@ init();
 </script>
 
 <script>
-// ===== 琴音音效引擎（Web Audio 本地合成：九宫格=一组琴键，全局回声，内嵌预览不发声） =====
+// ===== 琴音音效引擎 v2（九宫格琴键 + 每页声场 + 音阶切换 + 演奏模式接口，内嵌预览不发声） =====
 var SFX = (function () {
     'use strict';
     var EMBED = /[?&]embed=/.test(location.search);
-    var ctx = null, master = null, delayIn = null;
-    var VOL = 0.2;       // 总音量：轻盈不扰
-    var ECHO_T = 0.16;   // 回声间隔
-    var ECHO_FB = 0.35;  // 每层回声剩 35%，一层层荡开
+    var ctx = null, master = null, comp = null, delayIn = null, dl = null, fb = null, wet = null;
 
-    // 基础音阶：C 大调一个八度 do re mi fa sol la ti do'
-    var SCALE = [261.63, 293.66, 329.63, 349.23, 392.0, 440.0, 493.88, 523.25];
+    // ---- 设置（localStorage 记忆，跨会话生效） ----
+    var SET = { on: true, vol: 20, nightMute: false, vib: true, scale: 'maj' };
+    try {
+        var raw = JSON.parse(localStorage.getItem('sn-sfx-set') || 'null');
+        if (raw) for (var k in SET) if (raw[k] !== undefined) SET[k] = raw[k];
+    } catch (e) {}
+    function persistSet() { try { localStorage.setItem('sn-sfx-set', JSON.stringify(SET)); } catch (e) {} }
+
+    // ---- 音阶：大调 / 五声（宫商角徵羽）/ 自然小调 ----
+    var SCALES = {
+        maj:  [261.63, 293.66, 329.63, 349.23, 392.0, 440.0, 493.88, 523.25],
+        pent: [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33, 659.25, 783.99, 880.0],
+        min:  [261.63, 293.66, 311.13, 349.23, 392.0, 415.3, 466.16, 523.25]
+    };
+    var SCALE_NAMES = { maj: '大调', pent: '五声', min: '小调' };
+    function isNight() { var h = new Date().getHours(); return h >= 23 || h < 7; }
+    function mutedNow() { return !SET.on || (SET.nightMute && isNight()); }
+    function effScale() { // 大调 + 深夜 → 自动小调，温柔一点
+        return (SET.scale === 'maj' && isNight()) ? SCALES.min : SCALES[SET.scale];
+    }
+
+    // ---- 每页声场：同一套琴音，不同的房间（切换页签时渐变换装） ----
+    var SCENES = {
+        home:      { t: 0.16, fb: 0.35, wet: 0.24 },  // 默认温暖房间
+        photo:     { t: 0.10, fb: 0.20, wet: 0.15 },  // 小确幸：清亮短混响
+        treehole:  { t: 0.32, fb: 0.52, wet: 0.38 },  // 树洞：空谷深回声
+        diary:     { t: 0.12, fb: 0.16, wet: 0.11 },  // 日记：浅浅的书房
+        countdown: { t: 0.18, fb: 0.30, wet: 0.22 },
+        hrt:       { t: 0.16, fb: 0.35, wet: 0.24 },
+        liuren:    { t: 0.26, fb: 0.45, wet: 0.32 },  // 小六壬：古琴共鸣
+        dream:     { t: 0.42, fb: 0.55, wet: 0.40 },  // 解梦：绵长梦境
+        settings:  { t: 0.16, fb: 0.35, wet: 0.24 }
+    };
+    var curScene = 'home';
 
     // 九宫格琴键 → 音符（按标注：首页=升音do，随后从do起的六个音，解梦=高音ti'）
     var PILL = { '首页': 523.25, '小确幸': 261.63, '树洞': 293.66, '日记': 329.63, '倒数日': 349.23, 'HRT记录': 392.0, '小六壬': 440.0, '解梦': 493.88 };
@@ -3319,16 +3407,16 @@ var SFX = (function () {
                 var AC = window.AudioContext || window.webkitAudioContext;
                 if (!AC) return null;
                 ctx = new AC();
-                var comp = ctx.createDynamicsCompressor(); // 多音叠加不削波
+                comp = ctx.createDynamicsCompressor(); // 多音叠加不削波
                 comp.threshold.value = -18; comp.ratio.value = 6;
                 master = ctx.createGain();
-                master.gain.value = VOL;
+                master.gain.value = SET.vol / 100;
                 master.connect(comp); comp.connect(ctx.destination);
                 // 全局回声总线：所有琴音带一点温暖的房间回响
                 delayIn = ctx.createGain();
-                var dl = ctx.createDelay(1); dl.delayTime.value = ECHO_T;
-                var fb = ctx.createGain(); fb.gain.value = ECHO_FB;
-                var wet = ctx.createGain(); wet.gain.value = 0.24;
+                dl = ctx.createDelay(1); dl.delayTime.value = SCENES.home.t;
+                fb = ctx.createGain(); fb.gain.value = SCENES.home.fb;
+                wet = ctx.createGain(); wet.gain.value = SCENES.home.wet;
                 master.connect(delayIn); delayIn.connect(dl);
                 dl.connect(fb); fb.connect(dl);  // 反馈回路：回声一层层荡开
                 dl.connect(wet); wet.connect(comp);
@@ -3336,6 +3424,17 @@ var SFX = (function () {
             if (ctx.state === 'suspended') ctx.resume();
             return ctx;
         } catch (e) { return null; }
+    }
+
+    // 切换声场：0.6s 渐变到新房间的混响参数
+    function scene(name) {
+        curScene = name || 'home';
+        if (!ctx || !dl) return;
+        var s = SCENES[curScene] || SCENES.home;
+        var t = ctx.currentTime;
+        dl.delayTime.setTargetAtTime(s.t, t, 0.2);
+        fb.gain.setTargetAtTime(s.fb, t, 0.2);
+        wet.gain.setTargetAtTime(s.wet, t, 0.2);
     }
 
     var noiseBuf = null;
@@ -3371,6 +3470,48 @@ var SFX = (function () {
         h.start(t0); h.stop(t0 + 0.05);
     }
 
+    // —— 长音琴键（演奏模式）：按下持续、抬手自然收束 ——
+    function pianoHold(f, t0, vol) {
+        var nodes = [], stops = [];
+        var parts = [[1, 1], [2.001, 0.42], [3.004, 0.16]];
+        for (var i = 0; i < parts.length; i++) {
+            var o = ctx.createOscillator(), g = ctx.createGain();
+            o.type = 'sine'; o.frequency.value = f * parts[i][0];
+            var peak = vol * parts[i][1];
+            g.gain.setValueAtTime(0, t0);
+            g.gain.linearRampToValueAtTime(peak, t0 + 0.004);
+            g.gain.setTargetAtTime(Math.max(peak * 0.25, 0.002), t0 + 0.004, 0.9 + i * 0.2); // 按住时缓慢衰减
+            o.connect(g); g.connect(master);
+            o.start(t0);
+            nodes.push({ o: o, g: g, peak: peak });
+        }
+        var h = noise(), hg = ctx.createGain(), hf = ctx.createBiquadFilter();
+        hf.type = 'bandpass'; hf.frequency.value = Math.min(f * 3, 3200); hf.Q.value = 0.8;
+        hg.gain.setValueAtTime(vol * 0.12, t0);
+        hg.gain.exponentialRampToValueAtTime(0.001, t0 + 0.03);
+        h.connect(hf); hf.connect(hg); hg.connect(master);
+        h.start(t0); h.stop(t0 + 0.05);
+        return {
+            release: function (when) {
+                var t = when || ctx.currentTime;
+                nodes.forEach(function (n) {
+                    try {
+                        n.g.gain.cancelScheduledValues(t);
+                        n.g.gain.setValueAtTime(Math.max(n.g.gain.value, 0.0001), t);
+                        n.g.gain.setTargetAtTime(0.0001, t, 0.14);
+                        n.o.stop(t + 0.9);
+                    } catch (e) {}
+                });
+            },
+            kill: function () {
+                var t = ctx.currentTime;
+                nodes.forEach(function (n) {
+                    try { n.g.gain.cancelScheduledValues(t); n.g.gain.setTargetAtTime(0.0001, t, 0.05); n.o.stop(t + 0.3); } catch (e) {}
+                });
+            }
+        };
+    }
+
     // —— 笛音：气息起音 + 渐入的指颤，多挂一路回声显得悠远（边缘专属） ——
     function flute(f, t0, vol, dur) {
         dur = dur || 0.8;
@@ -3399,7 +3540,7 @@ var SFX = (function () {
         b.start(t0); b.stop(t0 + dur + 0.1);
     }
 
-    // 九宫格按键 → 固定音符（按图标注）；其余按键 → 按文字哈希在基础音阶里取音（同键固定、异键不同）
+    // 九宫格按键 → 固定音符（按图标注）；其余按键 → 按文字哈希在当前音阶里取音（同键固定、异键不同）
     function pillFreq(el) {
         var pill = el.classList && el.classList.contains('tab-item') ? el : (el.closest ? el.closest('.tab-item') : null);
         if (!pill) return null;
@@ -3415,20 +3556,22 @@ var SFX = (function () {
         var s = (el.textContent || el.value || el.title || el.className || '?').replace(/\s+/g, '').slice(0, 30);
         var h = 5381;
         for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
-        return SCALE[h % SCALE.length];
+        var sc = effScale();
+        return sc[h % sc.length];
     }
 
     // 设置键：切换升/降八度，用一记上行/下行音型确认
     function toggleOctave(t) {
         oct = (oct === 1) ? 0.5 : 1;
         try { localStorage.setItem('sn-sfx-oct', oct === 1 ? 'up' : 'down'); } catch (e) {}
-        if (oct === 1) { piano(SCALE[0], t, 0.3, 0.5); piano(SCALE[7], t + 0.11, 0.34, 0.8); }   // 升：do→do'
-        else { piano(SCALE[7], t, 0.3, 0.5); piano(SCALE[0], t + 0.11, 0.34, 0.8); }             // 降：do'→do
+        var sc = SCALES[SET.scale === 'maj' && isNight() ? 'min' : SET.scale] || SCALES.maj;
+        if (oct === 1) { piano(sc[0], t, 0.3, 0.5); piano(sc[sc.length - 1], t + 0.11, 0.34, 0.8); }  // 升：do→do'
+        else { piano(sc[sc.length - 1], t, 0.3, 0.5); piano(sc[0], t + 0.11, 0.34, 0.8); }             // 降：do'→do
     }
 
-    // 按键音：基础音阶琴音。九宫格按标注的固定音，其余按键按文字取音
+    // 按键音：九宫格按标注的固定音，其余按键按文字取音
     function button(el) {
-        var c = ac(); if (!c) return;
+        var c = ac(); if (!c || mutedNow()) return;
         var t = c.currentTime + 0.001;
         var pill = el.classList && el.classList.contains('tab-item') ? el : (el.closest ? el.closest('.tab-item') : null);
         if (pill && (pill.getAttribute('data-tab') === 'settings' || (pill.textContent || '').indexOf('设置') > -1)) {
@@ -3446,22 +3589,98 @@ var SFX = (function () {
     // 空白处点击：中央琴音音阶随机，边缘笛音音阶随机（不连续重复同一个音）
     var lastI = -1;
     function blank(x, y) {
-        var c = ac(); if (!c) return;
+        var c = ac(); if (!c || mutedNow()) return;
         var t = c.currentTime + 0.001;
         var W = window.innerWidth, H = window.innerHeight;
         var d = Math.min(x, W - x, y, H - y);
-        var i = Math.floor(Math.random() * SCALE.length);
-        if (i === lastI) i = (i + 1 + Math.floor(Math.random() * (SCALE.length - 1))) % SCALE.length;
+        var sc = effScale();
+        var i = Math.floor(Math.random() * sc.length);
+        if (i === lastI) i = (i + 1 + Math.floor(Math.random() * (sc.length - 1))) % sc.length;
         lastI = i;
-        if (d < 110) flute(SCALE[i] * oct, t, 0.34, 0.65 + Math.random() * 0.35); // 边缘：笛音 + 悠远回声
-        else piano(SCALE[i] * oct, t, 0.36);                                      // 中央：琴音
+        if (d < 110) flute(sc[i] * oct, t, 0.34, 0.65 + Math.random() * 0.35); // 边缘：笛音 + 悠远回声
+        else piano(sc[i] * oct, t, 0.36);                                      // 中央：琴音
+    }
+
+    // ---- 演奏模式：noteOn/noteOff，多指同按 ----
+    var held = {};
+    function noteOn(id, f, vol) {
+        var c = ac(); if (!c || mutedNow()) return null;
+        if (held[id]) { held[id].release(); delete held[id]; }
+        held[id] = pianoHold(f, c.currentTime + 0.001, vol || 0.5);
+        return held[id];
+    }
+    function noteOff(id) {
+        var h = held[id];
+        if (h) { h.release(); delete held[id]; }
+    }
+
+    // ---- 曲目回放：melody = [{type:'on',f,t},{type:'off',f,t}, ...]，t 为毫秒 ----
+    function playMelody(events, vol) {
+        var c = ac(); if (!c || !events || !events.length) return null;
+        var t0 = c.currentTime + 0.02;
+        var session = { nodes: [], dead: false };
+        var offs = {};
+        events.forEach(function (ev) { // 先收集所有抬手时刻，再逐个放音
+            if (ev.type === 'off' && ev.f) (offs[ev.f] = offs[ev.f] || []).push(ev.t);
+        });
+        events.forEach(function (ev) {
+            if (session.dead) return;
+            if (ev.type === 'on' && ev.f) {
+                var offT = null;
+                var arr = offs[ev.f] || [];
+                for (var i = 0; i < arr.length; i++) { if (arr[i] >= ev.t) { offT = arr[i]; break; } }
+                if (offT != null) { // 有明确抬手：按住多长响多长
+                    var dur = Math.max(0.3, (offT - ev.t) / 1000 + 0.35);
+                    piano(ev.f, t0 + ev.t / 1000, (vol || 0.42), dur);
+                } else {           // 没有抬手记录（如整段结束）：长音兜底
+                    var h = pianoHold(ev.f, t0 + ev.t / 1000, vol || 0.42);
+                    session.nodes.push(h);
+                }
+            }
+        });
+        // 兜底：把所有钢琴长音在曲目末尾收掉
+        var last = 0;
+        events.forEach(function (ev) { if (ev.t > last) last = ev.t; });
+        session.nodes.forEach(function (h) { h.release(t0 + last / 1000 + 0.2); });
+        return session;
+    }
+
+    // ---- 时刻音型：记忆浮现 / 胶囊开启 的专属小乐句（走当前页声场） ----
+    function cue(name) {
+        var c = ac(); if (!c || mutedNow()) return;
+        var t = c.currentTime + 0.01;
+        var sc = effScale();
+        if (name === 'memory') {         // 往日回忆：柔和的上行三连音
+            piano(sc[0] * 2, t, 0.3); piano(sc[2] * 2, t + 0.14, 0.28); piano(sc[4] * 2, t + 0.28, 0.26, 1.2);
+        } else if (name === 'unlock') { // 时间胶囊开启：do-mi-sol-do' 琶音，梦归回家
+            piano(sc[0], t, 0.36); piano(sc[2], t + 0.12, 0.36); piano(sc[4], t + 0.24, 0.36); piano(sc[sc.length - 1], t + 0.36, 0.42, 1.4);
+        } else if (name === 'seal') {   // 封存：一句温柔的下行
+            piano(sc[sc.length - 1], t, 0.3); piano(sc[4], t + 0.1, 0.3); piano(sc[0], t + 0.2, 0.34, 0.9);
+        }
+    }
+
+    function applySettings() {
+        if (master) {
+            try { master.gain.setTargetAtTime(SET.on ? SET.vol / 100 : 0, ctx.currentTime, 0.05); } catch (e) {}
+        }
     }
 
     return {
-        button: button, blank: blank,
+        button: button, blank: blank, scene: scene, cue: cue,
+        noteOn: noteOn, noteOff: noteOff, playMelody: playMelody,
+        pluck: function (i, vol) { // 报告/回忆的碎片音：当前音阶的第 i 个音
+            var c = ac(); if (!c || mutedNow()) return;
+            var sc = effScale();
+            piano(sc[((i % sc.length) + sc.length) % sc.length] * 2, c.currentTime + 0.002, vol || 0.26, 1.2);
+        },
+        settings: function () { return JSON.parse(JSON.stringify(SET)); },
+        set: function (k, v) { SET[k] = v; persistSet(); applySettings(); },
+        applySettings: applySettings,
         _state: function () { return ctx ? ctx.state : 'none'; },
         _freq: function (el) { return (pillFreq(el) || hashFreq(el)) * oct; },
-        _oct: function () { return oct; }
+        _oct: function () { return oct; },
+        _scale: function () { return SCALE_NAMES[SET.scale]; },
+        _muted: function () { return mutedNow(); }
     };
 })();
 </script>
@@ -3658,6 +3877,15 @@ var SFX = (function () {
         if (el) { delete activePresses[e.pointerId]; pressOut(el); }
     }
 
+    // 触摸振动（可在设置里关掉）
+    function VIB(ms) {
+        try {
+            var s = window.SFX && SFX.settings && SFX.settings().vib;
+            if (s !== false && navigator.vibrate) navigator.vibrate(ms);
+        } catch (err) {}
+    }
+    window.VIB = VIB;
+
     document.addEventListener('pointerdown', function (e) {
         if (e.button !== 0) return; // 只响应主键/触摸/笔
         // 点在滚动条或视口外时不产生任何涟漪
@@ -3671,17 +3899,55 @@ var SFX = (function () {
             spawnRipple(el, e.clientX, e.clientY);
             pressIn(el);
             SFX.button(el);
-            try { if (navigator.vibrate) navigator.vibrate(8); } catch (err) { /* 无振动权限时静默 */ }
+            VIB(8);
             return;
         }
         // 空白处：玫瑰金涟漪从点击中心荡开（表单控件、可编辑区、滚动内容区不打扰）
+        // 演奏模式 / 年度报告开着时不触发（避免琴键下叠加随机音、浮层下叠加涟漪）
+        var ovPerf = document.getElementById('perfOverlay');
+        var ovYear = document.getElementById('annualOverlay');
+        var overlayOpen = (ovPerf && ovPerf.classList.contains('open')) || (ovYear && ovYear.classList.contains('open'));
         var t = e.target;
-        if (t && t.nodeType === 1 && typeof t.closest === 'function' &&
+        if (!overlayOpen && t && t.nodeType === 1 && typeof t.closest === 'function' &&
             !t.closest('input, textarea, select, option, label, [contenteditable]')) {
             spawnAmbientRipple(e.clientX, e.clientY);
             SFX.blank(e.clientX, e.clientY); // 中央清亮水滴 / 靠边低回带轻回声
+            // 长按空白 0.5s → 演奏模式（移动到别处或提前抬手则取消）
+            var sx = e.clientX, sy = e.clientY, pid = e.pointerId, pressed = true;
+            var key = 'lp' + pid;
+            var timer = setTimeout(function () {
+                delete longPresses[key];
+                if (pressed && !document.getElementById('perfOverlay').classList.contains('open')) openPerfMode();
+            }, 500);
+            longPresses[key] = { timer: timer };
+            var cancel = function (ev) {
+                if (ev && ev.pointerId !== undefined && ev.pointerId !== pid) return;
+                pressed = false;
+                var lp = longPresses[key];
+                if (lp) { clearTimeout(lp.timer); delete longPresses[key]; }
+                document.removeEventListener('pointerup', cancel);
+                document.removeEventListener('pointercancel', cancel);
+                document.removeEventListener('pointermove', cancelMove);
+            };
+            var cancelMove = function (ev) {
+                if (ev.pointerId !== pid) return;
+                if (Math.abs(ev.clientX - sx) > 12 || Math.abs(ev.clientY - sy) > 12) cancel(ev);
+            };
+            document.addEventListener('pointerup', cancel);
+            document.addEventListener('pointercancel', cancel);
+            document.addEventListener('pointermove', cancelMove);
         }
     }, { passive: true });
+    var longPresses = {};
+    // 长按期间屏蔽系统长按菜单（文本选择区域的菜单不受影响：长按只在空白处计时）
+    document.addEventListener('contextmenu', function (e) {
+        if (document.getElementById('perfOverlay').classList.contains('open')) { e.preventDefault(); return; }
+        var t = e.target;
+        if (t && t.nodeType === 1 && t.closest && t.closest('.perf-overlay, .perf-keys')) { e.preventDefault(); return; }
+        var has = false;
+        for (var k in longPresses) { has = true; break; }
+        if (has) e.preventDefault();
+    });
 
     document.addEventListener('pointerup', clearPress, { passive: true });
     document.addEventListener('pointercancel', clearPress, { passive: true });
@@ -3692,6 +3958,8 @@ var SFX = (function () {
     });
 })();
 </script>
+
+
 
 <!-- ===== HRT 内嵌工具层（整合版新增） ===== -->
 <style>
@@ -3759,6 +4027,289 @@ var SFX = (function () {
         line-height: 2;
         z-index: 2;
     }
+
+    /* ===== v2.0 声音与琴键设置 ===== */
+    .sfx-set-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 9px 0;
+        border-bottom: 1px dashed rgba(0,0,0,0.06);
+    }
+    .sfx-set-row:last-of-type { border-bottom: none; }
+    .sfx-set-label { font-size: 15px; color: #4b3f3a; }
+    .sfx-set-sub { display: block; font-size: 12px; color: #b3a49c; margin-top: 2px; }
+    .sfx-toggle {
+        border: 1.5px solid #e8b4b8;
+        background: #fff;
+        color: #d9466f;
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 13px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: 0.2s;
+    }
+    .sfx-toggle.on { background: #d9466f; border-color: #d9466f; color: #fff; }
+
+    /* ===== 演奏模式 ===== */
+    .perf-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 900;
+        display: none;
+        flex-direction: column;
+        background: linear-gradient(180deg, #241f26 0%, #1c1a19 55%, #171412 100%);
+        color: #f0e6d6;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+    }
+    .perf-overlay.open { display: flex; }
+    .perf-top {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: calc(12px + env(safe-area-inset-top)) 16px 10px;
+    }
+    .perf-title { flex: 1; text-align: center; font-size: 16px; font-weight: 500; }
+    .perf-close, .perf-btn {
+        border: 1px solid rgba(240,230,214,0.25);
+        background: rgba(255,255,255,0.07);
+        color: #f0e6d6;
+        border-radius: 999px;
+        padding: 7px 14px;
+        font-size: 13px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: 0.15s;
+    }
+    .perf-close:active, .perf-btn:active { transform: scale(0.94); }
+    .perf-btn.rec-on { background: #d9466f; border-color: #d9466f; color: #fff; }
+    .perf-hint {
+        text-align: center;
+        font-size: 12px;
+        color: rgba(240,230,214,0.55);
+        padding: 0 16px 8px;
+    }
+    .perf-melody-bar {
+        max-height: 118px;
+        overflow-y: auto;
+        margin: 0 12px 6px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.05);
+        padding: 6px 10px;
+    }
+    .perf-melody-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 4px;
+        font-size: 13px;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .perf-melody-item:last-child { border-bottom: none; }
+    .perf-melody-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: rgba(240,230,214,0.85); }
+    .perf-melody-item .perf-btn { padding: 4px 10px; font-size: 12px; }
+    .perf-oct {
+        text-align: center;
+        font-size: 12px;
+        color: rgba(240,230,214,0.6);
+        padding-bottom: 6px;
+    }
+    .perf-keys {
+        position: relative;
+        flex: 1;
+        display: flex;
+        padding: 0 4px calc(14px + env(safe-area-inset-bottom));
+        touch-action: none;
+    }
+    .perf-white {
+        position: relative;
+        flex: 1;
+        margin: 0 1.5px;
+        border-radius: 0 0 10px 10px;
+        background: linear-gradient(180deg, #fdf9f1 0%, #efe7d9 100%);
+        box-shadow: inset 0 -4px 6px rgba(0,0,0,0.18);
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding-bottom: 12px;
+        font-size: 11px;
+        color: rgba(90,74,64,0.5);
+    }
+    .perf-white.pressed {
+        background: linear-gradient(180deg, #f7dfd9 0%, #eccfc6 100%);
+        box-shadow: inset 0 2px 8px rgba(217,70,111,0.28);
+        transform: translateY(1.5px);
+    }
+    .perf-black {
+        position: absolute;
+        top: 0;
+        width: 6.4%;
+        height: 61%;
+        border-radius: 0 0 8px 8px;
+        background: linear-gradient(180deg, #3a3330 0%, #211c1a 100%);
+        box-shadow: inset 0 -3px 5px rgba(255,255,255,0.08), 0 3px 6px rgba(0,0,0,0.5);
+        z-index: 3;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding-bottom: 8px;
+        font-size: 9px;
+        color: rgba(240,230,214,0.35);
+    }
+    .perf-black.pressed {
+        background: linear-gradient(180deg, #57403f 0%, #3c2b2a 100%);
+        box-shadow: inset 0 2px 6px rgba(217,70,111,0.35);
+        transform: translateY(1.5px);
+    }
+
+    /* ===== 时间胶囊 ===== */
+    .cap-card {
+        position: relative;
+        border-radius: 18px;
+        padding: 18px 18px 16px;
+        margin-bottom: 14px;
+        background: linear-gradient(135deg, rgba(240,230,214,0.9), rgba(228,214,196,0.9));
+        box-shadow: 0 2px 10px rgba(120,96,80,0.12);
+    }
+    .cap-card.locked { background: linear-gradient(135deg, rgba(200,196,190,0.55), rgba(184,178,170,0.5)); }
+    .cap-card.ready-to-open { background: linear-gradient(135deg, rgba(240,214,196,0.95), rgba(232,196,178,0.95)); box-shadow: 0 3px 16px rgba(217,120,90,0.25); }
+    .cap-title-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 16px;
+        color: #4b3f3a;
+        margin-bottom: 4px;
+    }
+    .cap-sub { font-size: 13px; color: #8d7d73; }
+    .cap-days { font-size: 22px; font-weight: 700; color: #d9466f; }
+    .cap-open-btn {
+        width: 100%;
+        margin-top: 12px;
+        padding: 12px;
+        border: none;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #e8a0a8, #d9466f);
+        color: #fff;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .cap-content {
+        margin-top: 12px;
+        padding: 14px;
+        border-radius: 12px;
+        background: rgba(255,252,247,0.85);
+        font-size: 15px;
+        line-height: 1.8;
+        color: #4b3f3a;
+        white-space: pre-wrap;
+    }
+    .cap-melody-note {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #a06a56;
+    }
+
+    /* ===== 往年今日回忆卡 ===== */
+    .memory-card {
+        position: fixed;
+        left: 50%;
+        bottom: calc(96px + env(safe-area-inset-bottom));
+        transform: translateX(-50%) translateY(24px);
+        width: min(400px, calc(100vw - 28px));
+        z-index: 800;
+        border-radius: 18px;
+        padding: 16px 18px 14px;
+        background: linear-gradient(135deg, rgba(248,240,228,0.97), rgba(238,224,208,0.97));
+        box-shadow: 0 8px 30px rgba(90,66,48,0.22);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.5s, transform 0.5s cubic-bezier(0.34, 1.4, 0.64, 1);
+    }
+    .memory-card.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+    .memory-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #a06a56;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+    .memory-text { font-size: 15px; line-height: 1.7; color: #4b3f3a; }
+    .memory-shake { font-size: 12px; color: #b3a49c; margin-top: 8px; }
+    .memory-acts { display: flex; gap: 8px; margin-top: 10px; justify-content: flex-end; }
+
+    /* ===== 年度报告 ===== */
+    .annual-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 950;
+        display: none;
+        overflow-y: auto;
+        background: linear-gradient(180deg, #241f26 0%, #2a2226 40%, #1c1a19 100%);
+        color: #f0e6d6;
+        padding: 0 0 calc(40px + env(safe-area-inset-bottom));
+        -webkit-overflow-scrolling: touch;
+    }
+    .annual-overlay.open { display: block; }
+    .annual-inner { max-width: 480px; margin: 0 auto; padding: 0 20px; }
+    .annual-close-row {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: calc(10px + env(safe-area-inset-top)) 20px 10px;
+        background: linear-gradient(180deg, #241f26 78%, transparent);
+        margin: 0 -20px;
+    }
+    .annual-close-row .perf-btn { backdrop-filter: blur(4px); }
+    .annual-hero { text-align: center; padding: 26px 0 10px; }
+    .annual-hero h2 { font-size: 26px; font-weight: 700; letter-spacing: 2px; }
+    .annual-hero p { font-size: 14px; color: rgba(240,230,214,0.6); margin-top: 8px; }
+    .annual-year-row { display: flex; justify-content: center; gap: 10px; margin: 14px 0 4px; }
+    .annual-stat-hero {
+        text-align: center;
+        padding: 18px 0 8px;
+    }
+    .annual-stat-hero .num { font-size: 54px; font-weight: 800; color: #f3c8c2; line-height: 1.1; }
+    .annual-stat-hero .lbl { font-size: 14px; color: rgba(240,230,214,0.65); }
+    .annual-sec {
+        margin-top: 26px;
+        padding: 20px 18px;
+        border-radius: 18px;
+        background: rgba(255,255,255,0.055);
+        border: 1px solid rgba(240,230,214,0.09);
+        opacity: 0;
+        transform: translateY(18px);
+        transition: opacity 0.7s, transform 0.7s;
+    }
+    .annual-sec.shown { opacity: 1; transform: none; }
+    .annual-sec h3 { font-size: 17px; margin-bottom: 14px; color: #f0e6d6; }
+    .annual-sec .big { font-size: 34px; font-weight: 800; color: #f3c8c2; }
+    .annual-sec .sub { font-size: 13px; color: rgba(240,230,214,0.6); margin-top: 6px; line-height: 1.7; }
+    .mood-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+    .mood-bar-emoji { font-size: 16px; width: 26px; text-align: center; }
+    .mood-bar-track { flex: 1; height: 10px; border-radius: 999px; background: rgba(255,255,255,0.09); overflow: hidden; }
+    .mood-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #d9466f, #f3c8c2); width: 0; transition: width 0.9s ease; }
+    .mood-bar-num { font-size: 12px; color: rgba(240,230,214,0.7); width: 30px; text-align: right; }
+    .month-bars { display: flex; align-items: flex-end; gap: 5px; height: 76px; padding-top: 4px; }
+    .month-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .month-col .bar { width: 100%; border-radius: 4px 4px 2px 2px; background: linear-gradient(180deg, #f3c8c2, #d9466f); min-height: 2px; }
+    .month-col .m { font-size: 9.5px; color: rgba(240,230,214,0.55); }
+    .annual-final { text-align: center; padding: 34px 10px 10px; font-size: 15px; line-height: 2; color: rgba(240,230,214,0.8); }
+    .annual-final .heart { font-size: 22px; }
 </style>
 
 <div class="hrt-overlay" id="hrtOverlay">
@@ -3771,6 +4322,45 @@ var SFX = (function () {
         <div class="hrt-load-tip" id="hrtLoadTip">正在加载 HRT Tracker…</div>
         <iframe class="hrt-frame" id="hrtFrame" title="HRT Tracker" onload="hrtFrameLoaded()"></iframe>
     </div>
+</div>
+
+<!-- ===== v2.0 演奏模式 ===== -->
+<div class="perf-overlay" id="perfOverlay">
+    <div class="perf-top">
+        <span class="perf-title">🎹 演奏模式</span>
+        <button class="perf-close" onclick="closePerfMode()">收起 ✕</button>
+    </div>
+    <div class="perf-top" style="padding-top:2px;">
+        <button class="perf-btn" id="perfRecBtn" onclick="togglePerfRec()">🎙 开始录音</button>
+        <button class="perf-btn" onclick="stopPerfPlayback()" id="perfPlayBtn">▶ 回放</button>
+        <button class="perf-btn" onclick="savePerfRecording()" id="perfSaveBtn" style="display:none;">💾 存起来</button>
+        <button class="perf-btn" onclick="shiftPerfOct(-1)">−8va</button>
+        <button class="perf-btn" onclick="shiftPerfOct(1)">+8va</button>
+    </div>
+    <div class="perf-hint" id="perfHint">多点可以同时按 · 滑动琴键可以滑奏 · 长按屏幕空白处或点收起退出</div>
+    <div class="perf-oct" id="perfOctLabel">当前音区：C4 – B5</div>
+    <div class="perf-melody-bar" id="perfMelodyBar" style="display:none;"></div>
+    <div class="perf-keys" id="perfKeys"></div>
+</div>
+
+<!-- ===== v2.0 往年今日 / 摇一摇回忆卡 ===== -->
+<div class="memory-card" id="memoryCard">
+    <div class="memory-head"><span>🕰</span><span id="memHeadText">往年今日</span><span style="flex:1"></span><span id="memDateText" style="font-weight:400;"></span></div>
+    <div class="memory-text" id="memText"></div>
+    <div class="memory-shake" id="memShakeHint">摇一摇手机 · 也能翻出一段回忆</div>
+    <div class="memory-acts">
+        <button class="perf-btn" onclick="cycleMemory()">换一段</button>
+        <button class="perf-btn" onclick="hideMemory(true)">收起</button>
+    </div>
+</div>
+
+<!-- ===== v2.0 年度碎碎念报告 ===== -->
+<div class="annual-overlay" id="annualOverlay">
+    <div class="annual-close-row">
+        <span style="flex:1"></span>
+        <button class="perf-btn" onclick="closeAnnualReport()">✕ 合上</button>
+    </div>
+    <div class="annual-inner" id="annualInner"></div>
 </div>
 
 <script>
@@ -3802,6 +4392,601 @@ var SFX = (function () {
         document.getElementById('hrtLoadTip').style.display = 'none';
     }
 </script>
+<script>
+// ===== v2.0 演奏模式 / 时间胶囊 / 往年今日回忆 / 年度碎碎念报告 / 声音设置 =====
+(function () {
+    'use strict';
+
+    // ---------- 数据 ----------
+    var melodies = loadJSON('melodies', []);   // [{id, name, time, events, dur}]
+    var capsules = loadJSON('capsules', []);   // [{id, title, content, unlockDate, melodyId, createTime, openedAt}]
+
+    function fmtMD(isoOrDate) {
+        var d = isoOrDate instanceof Date ? isoOrDate : new Date(isoOrDate);
+        if (isNaN(d)) return '';
+        return (d.getMonth() + 1) + '月' + d.getDate() + '日';
+    }
+    function daysUntil(dateStr) { // 今天到 dateStr 的天数（已过为负）
+        var t = new Date(); t.setHours(0, 0, 0, 0);
+        var d = new Date(dateStr + 'T00:00:00');
+        return Math.round((d - t) / 86400000);
+    }
+    function esc2(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+
+    // ---------- 声音设置 UI ----------
+    window.toggleSfxSetting = function (key) {
+        var s = SFX.settings();
+        SFX.set(key, !s[key]);
+        if (key === 'on' && !s[key]) { SFX.applySettings(); try { SFX.cue('memory'); } catch (e) {} } // 打开时给一记确认音
+        refreshSfxSettingsUI();
+    };
+    window.setSfxVolume = function (v) { SFX.set('vol', Number(v) || 0); };
+    window.cycleSfxScale = function () {
+        var order = ['maj', 'pent', 'min'], s = SFX.settings();
+        SFX.set('scale', order[(order.indexOf(s.scale) + 1) % order.length]);
+        refreshSfxSettingsUI();
+    };
+    window.refreshSfxSettingsUI = function () {
+        var s = SFX.settings();
+        var map = [
+            ['sfxOnBtn', s.on, s.on ? '开启（点击切换）' : '关闭（点击切换）'],
+            ['sfxNightBtn', s.nightMute, s.nightMute ? '开启（点击切换）' : '关闭（点击切换）'],
+            ['sfxVibBtn', s.vib, s.vib ? '开启（点击切换）' : '关闭（点击切换）']
+        ];
+        map.forEach(function (m) {
+            var b = document.getElementById(m[0]);
+            if (b) { b.textContent = m[2]; b.classList.toggle('on', !!m[1]); }
+        });
+        var sc = document.getElementById('sfxScaleBtn');
+        if (sc) {
+            var names = { maj: '大调', pent: '五声（宫商角徵羽）', min: '小调' };
+            sc.textContent = names[s.scale] + '（点击切换）';
+        }
+        var r = document.getElementById('sfxVolRange');
+        if (r && document.activeElement !== r) r.value = s.vol;
+    };
+    refreshSfxSettingsUI();
+
+    // ---------- 演奏模式 ----------
+    var PERF_OCT = 0;                      // 音区偏移：-1 = C3–B4，0 = C4–B5，+1 = C5–B6
+    var perfOpen = false;
+    var perfRec = null;                    // {start, events:[{type,f,t}]}
+    var perfSession = null;                 // 回放会话
+    var keyEls = [];                        // 白键元素
+    var pointerKeys = {};                   // pointerId -> {el, f}
+
+    function keyFreq(w, black) { // w: 0..11 白键序号（C4–G5）；black: 该白键右侧的黑键
+        var SEMI = [0, 2, 4, 5, 7, 9, 11];
+        var oct = 4 + PERF_OCT + Math.floor(w / 7);
+        var semi = SEMI[w % 7] + (black ? 1 : 0);
+        return 261.63 * Math.pow(2, oct - 4 + semi / 12);
+    }
+    function placeBlackKeys() { // 按白键实际渲染位置对齐黑键（不受边距/滚动影响）
+        var box = document.getElementById('perfKeys');
+        var whites = box.querySelectorAll('.perf-white');
+        var bl = box.querySelector('.perf-black');
+        if (!whites.length || !bl) return;
+        var bw = bl.offsetWidth;
+        box.querySelectorAll('.perf-black').forEach(function (b) {
+            var w = Number(b.dataset.w);
+            if (!whites[w]) return;
+            var boundary = whites[w].offsetLeft + whites[w].offsetWidth; // 白键 w 的右边界
+            b.style.left = Math.round(boundary - bw / 2) + 'px';
+            b.style.width = Math.round(bw) + 'px';
+        });
+    }
+    function buildPerfKeys() {
+        var box = document.getElementById('perfKeys');
+        box.innerHTML = '';
+        keyEls = [];
+        var NAMES = ['do', 're', 'mi', 'fa', 'sol', 'la', 'si'];
+        var w;
+        for (w = 0; w < 12; w++) {
+            var el = document.createElement('div');
+            el.className = 'perf-white';
+            el.dataset.w = w;
+            el.dataset.black = '0';
+            el.dataset.f = keyFreq(w, false);
+            el.textContent = NAMES[w % 7] + (4 + PERF_OCT + Math.floor(w / 7));
+            box.appendChild(el);
+            keyEls.push(el);
+        }
+        for (w = 0; w < 11; w++) {
+            var semi = [0, 2, 4, 5, 7, 9, 11][w % 7];
+            if ([0, 1, 3, 4, 5].indexOf(w % 7) < 0) continue; // mi-fa、si-do 之间没有黑键
+            var b = document.createElement('div');
+            b.className = 'perf-black';
+            b.dataset.w = w;
+            b.dataset.black = '1';
+            b.dataset.f = keyFreq(w, true);
+            b.style.width = '6.4%';
+            b.textContent = '♯';
+            box.appendChild(b);
+        }
+        placeBlackKeys();
+        var lbl = document.getElementById('perfOctLabel');
+        if (lbl) {
+            lbl.textContent = '当前音区：C' + (4 + PERF_OCT) + ' – G' + (5 + PERF_OCT) +
+                (PERF_OCT < 0 ? '（低八度）' : PERF_OCT > 0 ? '（高八度）' : '');
+        }
+    }
+    window.addEventListener('resize', function () {
+        if (document.getElementById('perfOverlay').classList.contains('open')) placeBlackKeys();
+    });
+    function keyFromPoint(x, y) {
+        var el = document.elementFromPoint(x, y);
+        if (!el || !el.classList) return null;
+        if (el.classList.contains('perf-black')) return el;
+        if (el.classList.contains('perf-white')) {
+            // 黑键浮在白键上方：取该位置的实际命中（黑键 z-index 高，elementFromPoint 已优先返回黑键）
+            return el;
+        }
+        return null;
+    }
+    function pressKey(pid, el, x, y) {
+        if (!el) return;
+        var f = Number(el.dataset.f);
+        el.classList.add('pressed');
+        pointerKeys[pid] = { el: el, f: f };
+        SFX.noteOn('p' + pid, f, 0.5);
+        if (VIB) VIB(6);
+        if (perfRec) perfRec.events.push({ type: 'on', f: f, t: Math.round(performance.now() - perfRec.start) });
+    }
+    function releaseKey(pid) {
+        var k = pointerKeys[pid];
+        if (!k) return;
+        delete pointerKeys[pid];
+        k.el.classList.remove('pressed');
+        SFX.noteOff('p' + pid);
+        if (perfRec) perfRec.events.push({ type: 'off', f: k.f, t: Math.round(performance.now() - perfRec.start) });
+    }
+    var keysBox = document.getElementById('perfKeys');
+    keysBox.addEventListener('pointerdown', function (e) {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        var el = keyFromPoint(e.clientX, e.clientY);
+        pressKey(e.pointerId, el);
+    });
+    keysBox.addEventListener('pointermove', function (e) { // 滑奏
+        if (!pointerKeys[e.pointerId]) return;
+        var el = keyFromPoint(e.clientX, e.clientY);
+        if (el && el !== pointerKeys[e.pointerId].el) {
+            releaseKey(e.pointerId);
+            pressKey(e.pointerId, el);
+        }
+    });
+    ['pointerup', 'pointercancel'].forEach(function (ev) {
+        document.addEventListener(ev, function (e) { releaseKey(e.pointerId); });
+    });
+
+    window.openPerfMode = function () {
+        perfOpen = true;
+        document.getElementById('perfOverlay').classList.add('open');
+        buildPerfKeys();
+        requestAnimationFrame(placeBlackKeys); // 布局稳定后再精确对齐黑键
+        try { SFX.scene('settings'); } catch (err) {} // 演奏模式：默认温暖房间声场
+        renderMelodyBar();
+    };
+    window.closePerfMode = function () {
+        Object.keys(pointerKeys).forEach(function (pid) { releaseKey(pid); });
+        stopPerfRec(false);
+        stopPerfPlayback();
+        perfOpen = false;
+        document.getElementById('perfOverlay').classList.remove('open');
+        try { SFX.scene(document.querySelector('.tab-item.active') ? document.querySelector('.tab-item.active').dataset.tab : 'home'); } catch (err) {}
+    };
+    window.shiftPerfOct = function (d) {
+        var next = PERF_OCT + d;
+        if (next < -1 || next > 1) return;
+        PERF_OCT = next;
+        buildPerfKeys();
+    };
+    window.togglePerfRec = function () {
+        var btn = document.getElementById('perfRecBtn');
+        if (!perfRec) {
+            perfRec = { start: performance.now(), events: [] };
+            btn.textContent = '⏹ 停止录音';
+            btn.classList.add('rec-on');
+            document.getElementById('perfHint').textContent = '正在录音 · 弹完点「停止录音」';
+        } else {
+            var dur = Math.round(performance.now() - perfRec.start);
+            var evs = perfRec.events;
+            perfRec = null;
+            btn.textContent = '🎙 重新录';
+            btn.classList.remove('rec-on');
+            document.getElementById('perfHint').textContent = '多点可以同时按 · 滑动琴键可以滑奏 · 长按屏幕空白处或点收起退出';
+            if (evs.filter(function (e) { return e.type === 'on'; }).length === 0) {
+                document.getElementById('perfSaveBtn').style.display = 'none';
+                return;
+            }
+            lastRec = { events: evs, dur: dur };
+            document.getElementById('perfSaveBtn').style.display = '';
+        }
+    };
+    function stopPerfRec(silent) {
+        if (!perfRec) return;
+        var btn = document.getElementById('perfRecBtn');
+        var evs = perfRec.events, dur = Math.round(performance.now() - perfRec.start);
+        perfRec = null;
+        btn.textContent = '🎙 开始录音';
+        btn.classList.remove('rec-on');
+        document.getElementById('perfHint').textContent = '多点可以同时按 · 滑动琴键可以滑奏 · 长按屏幕空白处或点收起退出';
+        if (!silent && evs.some(function (e) { return e.type === 'on'; })) {
+            lastRec = { events: evs, dur: dur };
+            document.getElementById('perfSaveBtn').style.display = '';
+        }
+    }
+    var lastRec = null;
+    window.stopPerfPlayback = function () {
+        if (perfSession) {
+            (perfSession.nodes || []).forEach(function (n) { n.kill(); });
+            perfSession = null;
+            document.getElementById('perfPlayBtn').textContent = '▶ 回放';
+        } else if (lastRec) {
+            perfSession = SFX.playMelody(lastRec.events);
+            document.getElementById('perfPlayBtn').textContent = '⏹ 停止';
+            var total = lastRec.dur || 0;
+            setTimeout(function () {
+                perfSession = null;
+                document.getElementById('perfPlayBtn').textContent = '▶ 回放';
+            }, total + 1600);
+        }
+    };
+    window.savePerfRecording = function () {
+        if (!lastRec) return;
+        var d = new Date();
+        var def = '琴声 · ' + (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+        var name = (prompt('给这段琴声起个名字：', def) || '').trim() || def;
+        melodies.unshift({ id: uid(), name: name, time: new Date().toISOString(), events: lastRec.events, dur: lastRec.dur });
+        if (melodies.length > 50) melodies.length = 50;
+        saveJSON('melodies', melodies);
+        renderMelodyBar();
+        refreshMelodySelect();
+        document.getElementById('perfSaveBtn').style.display = 'none';
+        try { SFX.cue('seal'); } catch (e) {}
+    };
+    window.playMelodyById = function (id) {
+        var m = melodies.find(function (x) { return x.id === id; });
+        if (!m) return;
+        stopPerfPlayback();
+        perfSession = SFX.playMelody(m.events);
+        setTimeout(function () { perfSession = null; }, (m.dur || 0) + 1600);
+    };
+    window.deleteMelody = function (id) {
+        if (!confirm('删除这段琴声？（已封存进胶囊的会一并失效）')) return;
+        melodies = melodies.filter(function (x) { return x.id !== id; });
+        saveJSON('melodies', melodies);
+        renderMelodyBar();
+        refreshMelodySelect();
+    };
+    function fmtDur(ms) {
+        var s = Math.round(ms / 1000);
+        return s < 60 ? s + ' 秒' : Math.floor(s / 60) + ' 分 ' + (s % 60) + ' 秒';
+    }
+    function renderMelodyBar() {
+        var bar = document.getElementById('perfMelodyBar');
+        if (!melodies.length) { bar.style.display = 'none'; bar.innerHTML = ''; return; }
+        bar.style.display = '';
+        bar.innerHTML = '<div style="font-size:12px;color:rgba(240,230,214,0.5);padding:4px 4px 8px;">我的琴声（' + melodies.length + '）</div>' +
+            melodies.map(function (m) {
+                return '<div class="perf-melody-item">' +
+                    '<span class="perf-melody-name">🎵 ' + esc2(m.name) + ' · ' + fmtDur(m.dur || 0) + '</span>' +
+                    '<button class="perf-btn" onclick="playMelodyById(\'' + m.id + '\')">▶</button>' +
+                    '<button class="perf-btn" onclick="deleteMelody(\'' + m.id + '\')">🗑</button>' +
+                    '</div>';
+            }).join('');
+    }
+    function refreshMelodySelect() {
+        var sel = document.getElementById('capMelody');
+        if (!sel) return;
+        sel.innerHTML = '<option value="">不封存琴声</option>' +
+            melodies.map(function (m) {
+                return '<option value="' + m.id + '">' + esc2(m.name) + '</option>';
+            }).join('');
+    }
+
+    // ---------- 时间胶囊 ----------
+    window.addCapsule = function () {
+        var title = document.getElementById('capTitle').value.trim();
+        var content = document.getElementById('capContent').value.trim();
+        var date = document.getElementById('capDate').value;
+        var melodyId = document.getElementById('capMelody').value || null;
+        if (!content) { alert('给未来的自己写点什么吧～'); return; }
+        if (!date) { alert('请选择开启日期'); return; }
+        if (daysUntil(date) > 0 && !confirm('开启日期是未来，要现在就封存吗？封存后到日子才能看哦。')) return;
+        capsules.unshift({
+            id: uid(), title: title || '给未来的信', content: content,
+            unlockDate: date, melodyId: melodyId, createTime: new Date().toISOString(), openedAt: null
+        });
+        saveJSON('capsules', capsules);
+        document.getElementById('capTitle').value = '';
+        document.getElementById('capContent').value = '';
+        document.getElementById('capDate').value = '';
+        document.getElementById('capMelody').value = '';
+        renderCapsules();
+        try { SFX.cue('seal'); } catch (e) {}
+    };
+    window.openCapsule = function (id) {
+        var c = capsules.find(function (x) { return x.id === id; });
+        if (!c) return;
+        if (!c.openedAt) {
+            c.openedAt = new Date().toISOString();
+            saveJSON('capsules', capsules);
+            try { SFX.cue('unlock'); } catch (e) {}
+        }
+        renderCapsules(c.id);
+    };
+    window.replayCapsuleMelody = function (id) {
+        var c = capsules.find(function (x) { return x.id === id; });
+        if (!c || !c.melodyId) return;
+        playMelodyById(c.melodyId);
+    };
+    window.deleteCapsule = function (id) {
+        if (!confirm('删除这个时间胶囊？')) return;
+        capsules = capsules.filter(function (x) { return x.id !== id; });
+        saveJSON('capsules', capsules);
+        renderCapsules();
+    };
+    function renderCapsules(highlightId) {
+        var box = document.getElementById('capList');
+        if (!box) return;
+        if (!capsules.length) {
+            box.innerHTML = '<div class="tip-text">还没有时间胶囊。写一封信给未来的自己吧 🕰</div>';
+            return;
+        }
+        box.innerHTML = capsules.map(function (c) {
+            var left = daysUntil(c.unlockDate);
+            var unlocked = left <= 0;
+            var hasMelody = !!c.melodyId;
+            var inner = '';
+            if (!unlocked) {
+                inner = '<div class="cap-title-line">🔒 ' + esc2(c.title) + '</div>' +
+                    '<div class="cap-sub">' + esc2(c.unlockDate) + ' 开启 · 还有 <span class="cap-days">' + left + '</span> 天</div>' +
+                    (hasMelody ? '<div class="cap-melody-note">🎼 里面封存了一段琴声，到了才能听</div>' : '') +
+                    '<div style="position:absolute; top:14px; right:14px;"><button class="btn-del" onclick="deleteCapsule(\'' + c.id + '\')">删除</button></div>';
+            } else if (!c.openedAt) {
+                inner = '<div class="cap-title-line">✨ ' + esc2(c.title) + '</div>' +
+                    '<div class="cap-sub">到了开启的日子</div>' +
+                    (hasMelody ? '<div class="cap-melody-note">🎼 还有一段封存的琴声</div>' : '') +
+                    '<button class="cap-open-btn" onclick="openCapsule(\'' + c.id + '\')">开启胶囊</button>' +
+                    '<div style="position:absolute; top:14px; right:14px;"><button class="btn-del" onclick="deleteCapsule(\'' + c.id + '\')">删除</button></div>';
+            } else {
+                inner = '<div class="cap-title-line">💌 ' + esc2(c.title) +
+                    '<span style="font-size:12px;font-weight:400;color:#a08d80;"> ' + fmtMD(c.openedAt) + ' 已开启</span></div>' +
+                    '<div class="cap-content">' + esc2(c.content) + '</div>' +
+                    (hasMelody ? '<button class="cap-open-btn" style="background:linear-gradient(135deg,#c9a8bb,#8d6a8f);" onclick="replayCapsuleMelody(\'' + c.id + '\')">▶ 再听那天的琴声</button>' : '') +
+                    '<div style="position:absolute; top:14px; right:14px;"><button class="btn-del" onclick="deleteCapsule(\'' + c.id + '\')">删除</button></div>';
+            }
+            var cls = 'cap-card' + (unlocked ? (c.openedAt ? '' : ' ready-to-open') : ' locked');
+            if (highlightId && c.id === highlightId) cls += ' cap-card-just';
+            return '<div class="' + cls + '" style="position:relative;">' + inner + '</div>';
+        }).join('');
+        var j = box.querySelector('.cap-card-just');
+        if (j) { j.style.transition = 'box-shadow 1.2s'; j.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    }
+    renderCapsules();
+
+    // ---------- 往年今日 / 摇一摇回忆 ----------
+    function collectMemories() {
+        var out = [];
+        records.forEach(function (r) {
+            if (r.time) out.push({ kind: '小确幸', when: new Date(r.time), text: (r.text || '') + (r.images && r.images.length ? ' 📷' : ''), mood: r.mood });
+        });
+        treeholes.forEach(function (t) {
+            if (t.time) out.push({ kind: '树洞', when: new Date(t.time), text: t.text || '', mood: t.mood });
+        });
+        diaries.forEach(function (d) {
+            if (d.date) out.push({ kind: '日记', when: new Date(d.date + 'T12:00:00'), text: (d.title ? '《' + d.title + '》 ' : '') + (d.content || ''), mood: d.mood });
+        });
+        return out.filter(function (m) { return m.text && m.when && !isNaN(m.when); });
+    }
+    var memList = [], memIdx = -1, memIsYearAgo = false;
+    function yearAgoList() {
+        var now = new Date();
+        var limit = new Date(now.getTime() - 30 * 86400000);
+        return collectMemories().filter(function (m) {
+            return m.when.getMonth() === now.getMonth() && m.when.getDate() === now.getDate() && m.when < limit;
+        });
+    }
+    function oldList() {
+        var limit = new Date(Date.now() - 30 * 86400000);
+        return collectMemories().filter(function (m) { return m.when < limit; });
+    }
+    window.showMemory = function (m, headText) {
+        if (!m) return;
+        var card = document.getElementById('memoryCard');
+        document.getElementById('memHeadText').textContent = headText || '往年今日';
+        var y = new Date().getFullYear() - m.when.getFullYear();
+        document.getElementById('memDateText').textContent =
+            (m.when.getFullYear() !== new Date().getFullYear() ? y + ' 年前 · ' : '') + fmtMD(m.when);
+        var txt = m.text.length > 88 ? m.text.slice(0, 88) + '…' : m.text;
+        document.getElementById('memText').innerHTML = '<span style="color:#a06a56;font-size:13px;">【' + m.kind + '】</span> ' + esc2(txt) +
+            (m.mood ? ' <span style="opacity:.75;">' + esc2(m.mood) + '</span>' : '');
+        card.classList.add('show');
+        try { SFX.cue('memory'); } catch (e) {}
+    };
+    window.cycleMemory = function () {
+        if (!memList.length) { memList = oldList(); memIsYearAgo = false; }
+        if (!memList.length) return;
+        memIdx = (memIdx + 1) % memList.length;
+        showMemory(memList[memIdx], (memIsYearAgo && memIdx === 0) ? '往年今日' : '翻出的一段回忆');
+    };
+    window.hideMemory = function (today) {
+        document.getElementById('memoryCard').classList.remove('show');
+        if (today) {
+            try { localStorage.setItem('sn-mem-seen-' + (currentUser || 'guest') + '-' + todayStr(), '1'); } catch (e) {}
+        }
+    };
+    // 启动 1.6s 后：若有往年今日且今天没看过 → 飘出来
+    setTimeout(function () {
+        try {
+            var seen = localStorage.getItem('sn-mem-seen-' + (currentUser || 'guest') + '-' + todayStr());
+            if (seen) return;
+        } catch (e) {}
+        memList = yearAgoList();
+        if (memList.length) { memIdx = 0; memIsYearAgo = true; showMemory(memList[0], '往年今日'); }
+    }, 1600);
+    // 摇一摇 → 随机翻出一段 30 天前的回忆
+    var lastAX = 0, lastAY = 0, lastAZ = 0, lastShakeAt = 0;
+    window.addEventListener('devicemotion', function (e) {
+        var a = e.accelerationIncludingGravity;
+        if (!a) return;
+        var dx = Math.abs((a.x || 0) - lastAX), dy = Math.abs((a.y || 0) - lastAY), dz = Math.abs((a.z || 0) - lastAZ);
+        lastAX = a.x || 0; lastAY = a.y || 0; lastAZ = a.z || 0;
+        var now = Date.now();
+        if (dx + dy + dz > 34 && now - lastShakeAt > 3500) {
+            lastShakeAt = now;
+            var pool = oldList();
+            if (!pool.length) return;
+            if (document.getElementById('perfOverlay').classList.contains('open') ||
+                document.getElementById('annualOverlay').classList.contains('open')) return;
+            memList = pool;
+            memIdx = Math.floor(Math.random() * pool.length);
+            showMemory(pool[memIdx], '摇出来的一段回忆');
+        }
+    });
+
+    // ---------- 年度碎碎念报告 ----------
+    var annualYear = new Date().getFullYear();
+    window.openAnnualReport = function () {
+        buildAnnualReport();
+        document.getElementById('annualOverlay').classList.add('open');
+        document.getElementById('annualOverlay').scrollTop = 0;
+    };
+    window.closeAnnualReport = function () {
+        document.getElementById('annualOverlay').classList.remove('open');
+    };
+    window.setAnnualYear = function (y) { annualYear = y; buildAnnualReport(); document.getElementById('annualOverlay').scrollTop = 0; };
+    function statYear(year) {
+        var R = { recs: 0, holes: 0, diaries: 0, days: {}, chars: 0, moods: {}, months: new Array(12).fill(0), longestDiary: null, melodySecs: 0 };
+        records.forEach(function (r) {
+            var d = new Date(r.time);
+            if (d.getFullYear() !== year) return;
+            R.recs++; R.days[d.getMonth() + '-' + d.getDate()] = 1; R.months[d.getMonth()]++;
+            R.chars += (r.text || '').length;
+            if (r.mood) R.moods[r.mood] = (R.moods[r.mood] || 0) + 1;
+        });
+        treeholes.forEach(function (t) {
+            var d = new Date(t.time);
+            if (d.getFullYear() !== year) return;
+            R.holes++; R.days[d.getMonth() + '-' + d.getDate()] = 1; R.months[d.getMonth()]++;
+            R.chars += (t.text || '').length;
+            if (t.mood) R.moods[t.mood] = (R.moods[t.mood] || 0) + 1;
+        });
+        diaries.forEach(function (d) {
+            var dt = new Date(d.date + 'T12:00:00');
+            if (dt.getFullYear() !== year) return;
+            R.diaries++; R.days[dt.getMonth() + '-' + dt.getDate()] = 1; R.months[dt.getMonth()]++;
+            R.chars += (d.content || '').length;
+            if (d.mood) R.moods[d.mood] = (R.moods[d.mood] || 0) + 1;
+            if (!R.longestDiary || (d.content || '').length > R.longestDiary.len)
+                R.longestDiary = { len: (d.content || '').length, date: d.date, title: d.title || '' };
+        });
+        R.dayCount = Object.keys(R.days).length;
+        R.capsules = capsules.filter(function (c) { return new Date(c.createTime).getFullYear() === year; }).length;
+        R.capsulesOpened = capsules.filter(function (c) { return c.openedAt && new Date(c.openedAt).getFullYear() === year; }).length;
+        var ms = melodies.filter(function (m) { return new Date(m.time).getFullYear() === year; });
+        R.melodyCount = ms.length;
+        ms.forEach(function (m) { R.melodySecs += (m.dur || 0) / 1000; });
+        return R;
+    }
+    function buildAnnualReport() {
+        // 年份选择：有数据的年份（含今年）
+        var years = {};
+        [records.map(function (r) { return r.time; }), treeholes.map(function (t) { return t.time; }),
+         diaries.map(function (d) { return d.date + 'T12:00:00'; })].forEach(function (arr) {
+            arr.forEach(function (s) { var y = new Date(s).getFullYear(); if (y) years[y] = 1; });
+        });
+        var yrList = Object.keys(years).map(Number).sort();
+        if (!yrList.length) yrList = [annualYear];
+        if (yrList.indexOf(annualYear) < 0) annualYear = yrList[yrList.length - 1];
+        var R = statYear(annualYear);
+        var total = R.recs + R.holes + R.diaries;
+        var moodArr = Object.keys(R.moods).map(function (k) { return [k, R.moods[k]]; }).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 6);
+        var moodMax = moodArr.length ? moodArr[0][1] : 1;
+        var monthMax = Math.max.apply(null, R.months.concat([1]));
+        var maxMonth = R.months.indexOf(Math.max.apply(null, R.months));
+        var QUOTES = ['', '一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
+        var html = '';
+        html += '<div class="annual-hero"><h2>' + annualYear + ' 年的碎碎念</h2><p>这一年，被你认真记住了。</p></div>';
+        html += '<div class="annual-year-row">' + yrList.map(function (y) {
+            return '<button class="perf-btn" style="' + (y === annualYear ? 'background:#d9466f;border-color:#d9466f;color:#fff;' : '') + '" onclick="setAnnualYear(' + y + ')">' + y + '</button>';
+        }).join('') + '</div>';
+        html += '<div class="annual-stat-hero"><div class="num">' + R.dayCount + '</div><div class="lbl">天有记录 · 一共留下 ' + total + ' 条</div></div>';
+        html += sec('📋 你记下的', '<span class="big">' + total + '</span> 条' +
+            '<div class="sub">小确幸 ' + R.recs + ' 条 · 树洞 ' + R.holes + ' 次 · 日记 ' + R.diaries + ' 篇</div>');
+        html += sec('✍️ 你写下的', '<span class="big">' + R.chars + '</span> 个字' +
+            '<div class="sub">大约相当于 ' + Math.max(1, Math.round(R.chars / 20)) + ' 首《静夜思》。最用力的那天，你写下了' +
+            (R.longestDiary ? QUOTES[Number(R.longestDiary.date.slice(5, 7))] + R.longestDiary.date.slice(8, 10) + '日' + (R.longestDiary.title ? '的《' + esc2(R.longestDiary.title) + '》' : '那篇日记') + '，共 ' + R.longestDiary.len + ' 字' : '——还没动笔') + '。</div>');
+        if (moodArr.length) {
+            html += sec('😊 你的心情', moodArr.map(function (m) {
+                return '<div class="mood-bar-row"><span class="mood-bar-emoji">' + esc2(m[0].split(' ')[0]) + '</span>' +
+                    '<div class="mood-bar-track"><div class="mood-bar-fill" data-w="' + Math.round(m[1] / moodMax * 100) + '"></div></div>' +
+                    '<span class="mood-bar-num">' + m[1] + '</span></div>';
+            }).join('') + '<div class="sub">' + esc2(moodArr[0][0]) + ' 是 ' + annualYear + ' 年你最常有的心情。</div>');
+        }
+        html += sec('🗓 每月记录', '<div class="month-bars">' + R.months.map(function (n, i) {
+            return '<div class="month-col"><div class="bar" style="height:' + Math.max(2, Math.round(n / monthMax * 62)) + 'px;" title="' + n + ' 条"></div><span class="m">' + (i + 1) + '</span></div>';
+        }).join('') + '</div><div class="sub">' + (monthMax > 0 ? QUOTES[maxMonth + 1] + '是你最勤快的一个月。' : '这一年还没有记录。') + '</div>');
+        html += sec('🕰 时间胶囊', '<span class="big">' + R.capsules + '</span> 个' +
+            '<div class="sub">' + (R.capsulesOpened ? '其中 ' + R.capsulesOpened + ' 个已经开启。' : '都还安静地等着未来。') + '</div>');
+        html += sec('🎹 你的琴声', '<span class="big">' + R.melodyCount + '</span> 段' +
+            '<div class="sub">' + (R.melodyCount ? '一共 ' + fmtDur((R.melodySecs * 1000) | 0) + '，有些或许已封进胶囊。' : '今年还没弹过。长按屏幕空白处，进去弹一段？') + '</div>');
+        html += '<div class="annual-final">每一个记下来的日子都不会消失。<br>它们变成了琴声、信和回忆，<br>在需要的时候轻轻响起。<br><span class="heart">🤍</span></div>';
+        document.getElementById('annualInner').innerHTML = html;
+
+        // 分节渐显 + 逐节上行琴音
+        var secs = document.querySelectorAll('#annualInner .annual-sec');
+        if ('IntersectionObserver' in window) {
+            var io = new IntersectionObserver(function (entries) {
+                entries.forEach(function (en) {
+                    if (en.isIntersecting) {
+                        en.target.classList.add('shown');
+                        var i = Array.prototype.indexOf.call(secs, en.target);
+                        try { SFX.pluck(i * 2 + 1, 0.22); } catch (e) {}
+                        io.unobserve(en.target);
+                    }
+                });
+            }, { threshold: 0.4 });
+            secs.forEach(function (s) { io.observe(s); });
+        } else {
+            secs.forEach(function (s) { s.classList.add('shown'); });
+        }
+        setTimeout(function () {
+            document.querySelectorAll('#annualInner .mood-bar-fill').forEach(function (b) {
+                b.style.width = (b.dataset.w || 0) + '%';
+            });
+        }, 600);
+    }
+    function sec(title, bodyHtml) {
+        return '<div class="annual-sec"><h3>' + title + '</h3>' + bodyHtml + '</div>';
+    }
+
+    // ---------- 数据刷新（登录切换 / 云端恢复 / 备份导入后由外部调用） ----------
+    window.v2Refresh = function () {
+        melodies = loadJSON('melodies', []);
+        capsules = loadJSON('capsules', []);
+        renderMelodyBar();
+        refreshMelodySelect();
+        renderCapsules();
+    };
+
+    // ---------- 页签切换联动 ----------
+    var _origSwitchTab = window.switchTab;
+    window.switchTab = function (tab) {
+        var r = _origSwitchTab(tab);
+        hideMemory(false);
+        if (tab === 'countdown') { refreshMelodySelect(); renderCapsules(); }
+        if (tab === 'settings') refreshSfxSettingsUI();
+        return r;
+    };
+})();
+</script>
+
 <script>
 // PWA：注册 Service Worker（https 且非内嵌模式），离线也能打开
 if ('serviceWorker' in navigator && location.protocol === 'https:' && !/[?&]embed=/.test(location.search)) {
