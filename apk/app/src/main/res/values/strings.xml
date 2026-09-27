@@ -2,4 +2,10 @@
 <resources>
     <string name="app_name">碎碎念</string>
     <string name="saved_to">已保存到「下载」：</string>
+    <string name="sc_diary">写日记</string>
+    <string name="sc_diary_long">写一篇今天的日记</string>
+    <string name="sc_treehole">投树洞</string>
+    <string name="sc_treehole_long">去树洞说说心事</string>
+    <string name="sc_perf">弹琴</string>
+    <string name="sc_perf_long">打开演奏模式弹一段</string>
 </resources>

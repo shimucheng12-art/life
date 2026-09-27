@@ -57,6 +57,8 @@ public class MainActivity extends Activity {
 
         web.setBackgroundColor(0xFFFFFFFF);
         web.addJavascriptInterface(new SaveBridge(), "AndroidBridge");
+        web.addJavascriptInterface(new ReminderBridge(this), "NativeReminders");
+        Notifier.ensureChannel(this); // 提醒通知渠道
 
         web.setWebViewClient(new WebViewClient() {
             @Override
@@ -219,7 +221,33 @@ public class MainActivity extends Activity {
         if (savedInstanceState != null) {
             web.restoreState(savedInstanceState);
         } else {
-            web.loadUrl(SITE);
+            web.loadUrl(startUrl(getIntent()));
+        }
+    }
+
+    /** 桌面快捷方式 / 通知点进来：带 ?tab= 直达对应页面（无则进首页）。 */
+    private String startUrl(Intent intent) {
+        String tab = null;
+        try {
+            if (intent != null && intent.getExtras() != null) {
+                Object t = intent.getExtras().get("tab");
+                if (t instanceof String) tab = (String) t;
+            }
+        } catch (Exception ignored) {
+        }
+        if (tab == null) return SITE;
+        if ("perf".equals(tab)) return SITE + "?tab=perf";
+        if (tab.matches("[a-z]+")) return SITE + "?tab=" + tab;
+        return SITE;
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        String url = startUrl(intent);
+        if (!url.equals(SITE) || web.getUrl() == null) {
+            web.loadUrl(url);
         }
     }
 

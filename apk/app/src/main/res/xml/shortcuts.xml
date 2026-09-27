@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="write_diary"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/sc_diary"
+        android:shortcutLongLabel="@string/sc_diary_long">
+        <intent
+            android:action="com.smirnovayama.hrttracker.OPEN_TAB"
+            android:targetPackage="com.smirnovayama.hrttracker"
+            android:targetClass="com.smirnovayama.hrttracker.MainActivity">
+            <extra android:name="tab" android:value="diary" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="treehole"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/sc_treehole"
+        android:shortcutLongLabel="@string/sc_treehole_long">
+        <intent
+            android:action="com.smirnovayama.hrttracker.OPEN_TAB"
+            android:targetPackage="com.smirnovayama.hrttracker"
+            android:targetClass="com.smirnovayama.hrttracker.MainActivity">
+            <extra android:name="tab" android:value="treehole" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="perf"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/sc_perf"
+        android:shortcutLongLabel="@string/sc_perf_long">
+        <intent
+            android:action="com.smirnovayama.hrttracker.OPEN_TAB"
+            android:targetPackage="com.smirnovayama.hrttracker"
+            android:targetClass="com.smirnovayama.hrttracker.MainActivity">
+            <extra android:name="tab" android:value="perf" />
+        </intent>
+    </shortcut>
+</shortcuts>
