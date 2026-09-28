@@ -11,7 +11,12 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.InputType;
 import android.util.Base64;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.TextView;
 import android.webkit.DownloadListener;
 import android.webkit.JavascriptInterface;
 import android.webkit.JsPromptResult;
@@ -34,6 +39,7 @@ public class MainActivity extends Activity {
     private static final String SITE_HOST = "shimucheng12-art.github.io";
 
     private WebView web;
+    private View scrim;  // 切后台遮罩：盖住内容，任务栏预览只见深色
 
     /** 待回调的文件选择器结果（网页 <input type=file> 触发）。 */
     private ValueCallback<Uri[]> fileCallback;
@@ -45,7 +51,18 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         web = new WebView(this);
-        setContentView(web);
+        FrameLayout root = new FrameLayout(this);
+        root.addView(web, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        scrim = new View(this);
+        scrim.setBackgroundColor(0xFF1C1A19);
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        scrim.setLayoutParams(lp);
+        scrim.setVisibility(View.GONE);
+        root.addView(scrim);
+        // 遮罩上不放交互，只为遮挡内容
+        setContentView(root);
 
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
@@ -58,6 +75,7 @@ public class MainActivity extends Activity {
         web.setBackgroundColor(0xFFFFFFFF);
         web.addJavascriptInterface(new SaveBridge(), "AndroidBridge");
         web.addJavascriptInterface(new ReminderBridge(this), "NativeReminders");
+        web.addJavascriptInterface(new PrivacyBridge(this), "NativePrivacy");
         Notifier.ensureChannel(this); // 提醒通知渠道
 
         web.setWebViewClient(new WebViewClient() {
@@ -252,6 +270,23 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onPause() {
+        scrim.setVisibility(View.VISIBLE); // 先盖住，再走系统的任务栏截图
+        if (new PrivacyBridge(this).isEnabled()) LockHelper.requestLock(this);
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        scrim.setVisibility(View.GONE);
+        // 应用锁开启且本会话未解锁 → 弹系统指纹/密码
+        if (new PrivacyBridge(this).isEnabled() && LockHelper.pendingLock(this)) {
+            LockHelper.showLock(this);
+        }
+    }
+
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         web.saveState(outState);
@@ -273,7 +308,7 @@ public class MainActivity extends Activity {
         super.onDestroy();
     }
 
-    /** 文件选择器结果回传给网页（图片上传 / 数据导入）。 */
+    /** 文件选择器 + 应用锁解锁 的结果回传。 */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQ_FILE) {
@@ -293,6 +328,14 @@ public class MainActivity extends Activity {
             }
             fileCallback.onReceiveValue(uris); // 取消时必须回传 null，否则下次点选择器无响应
             fileCallback = null;
+            return;
+        }
+        if (requestCode == LockHelper.REQ_UNLOCK) {
+            if (resultCode != RESULT_OK) {
+                // 应用锁验证未通过：保持遮罩，回前台再试
+                LockHelper.requestLock(this);
+                scrim.setVisibility(View.VISIBLE);
+            }
             return;
         }
         super.onActivityResult(requestCode, resultCode, data);

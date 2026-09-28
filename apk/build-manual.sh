@@ -13,8 +13,8 @@ OUT="$WS/tmp/apk-stage"
 KEYS="$WS/download/碎碎念-APK签名密钥"
 KS="$KEYS/release.jks"
 KS_PASS="suinian2026!apk"
-VERSION_NAME="2.1.0"
-VERSION_CODE="9"
+VERSION_NAME="2.2.0"
+VERSION_CODE="10"
 
 rm -rf "$OUT"; mkdir -p "$OUT/gen" "$OUT/classes" "$OUT/build"
 mkdir -p "$KEYS"
@@ -51,9 +51,10 @@ echo "✓ 资源链接完成"
 find "$OUT/gen" -name "*.java" > "$OUT/build/sources.txt"
 find "$SRC/java/com/smirnovayama/hrttracker" -name "*.java" >> "$OUT/build/sources.txt"
 java -jar "$WS/tmp/ecj.jar" -8 -encoding UTF-8 \
+  -warn:-deprecation \
   -bootclasspath "$JAR" \
   -d "$OUT/classes" \
-  @"$OUT/build/sources.txt" 2>&1 | head -10
+  @"$OUT/build/sources.txt" 2>&1 | tail -20
 echo "✓ Java编译完成"
 
 # 5) d8 转 dex

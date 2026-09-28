@@ -1161,6 +1161,7 @@
         </div>
         <div class="nav-actions">
             <a class="ui-switch" href="life2.html" title="切换到新版 UI">✦ 新版<span class="sw-ext"> UI</span></a>
+            <button class="nav-btn" onclick="openSearch()" aria-label="全局搜索">🔍 搜索</button>
             <button class="nav-btn" id="userBtn" onclick="userBtnClick()">登录</button>
         </div>
     </div>
@@ -1194,6 +1195,12 @@
         <div class="page active" id="page-home">
             <div class="tip-text">
                 为每一张照片配上一句心里话，把平凡日子里的温柔都好好收着。
+            </div>
+            <div class="card cycle-card" id="cycleCard" style="display:none;">
+                <h3 class="section-title" style="font-size:22px; margin-bottom:6px;">💉 心情 × 注射周期</h3>
+                <div class="backup-desc" style="margin-bottom:4px;" id="cycleSub"></div>
+                <div class="cycle-days" id="cycleDays"></div>
+                <div id="cycleInsightWrap"></div>
             </div>
         </div>
         <!-- 小确幸记录页面 -->
@@ -1503,6 +1510,20 @@
                 <button class="btn-outline" style="width:100%; margin-top:10px;" onclick="openPerfMode()">🎹 打开演奏模式</button>
             </div>
             <div class="card">
+                <h3 class="section-title" style="font-size:22px; margin-bottom:10px;">🔒 隐私与安全</h3>
+                <div class="sfx-set-row">
+                    <span class="sfx-set-label">切后台时隐藏内容<span class="sfx-set-sub">防任务栏预览偷瞄</span></span>
+                    <button id="privacyBlurBtn" class="sfx-toggle" onclick="togglePrivacyBlur()">开启（点击切换）</button>
+                </div>
+                <div class="sfx-set-row" id="appLockRow" style="display:none;">
+                    <span class="sfx-set-label">应用锁<span class="sfx-set-sub">打开 App 需指纹/锁屏密码</span></span>
+                    <button id="appLockBtn" class="sfx-toggle" onclick="toggleAppLock()">关闭（点击切换）</button>
+                </div>
+                <div class="backup-desc" style="margin:10px 0 0;">
+                    应用锁与后台隐藏在安卓 App 中生效；应用锁使用系统的指纹 / 锁屏密码验证。
+                </div>
+            </div>
+            <div class="card">
                 <h3 class="section-title" style="font-size:22px; margin-bottom:10px;">🌙 夜间模式与字号</h3>
                 <div class="sfx-set-row">
                     <span class="sfx-set-label">夜间模式<span class="sfx-set-sub">自动 = 22:00–6:00</span></span>
@@ -1535,7 +1556,7 @@
             <div class="card">
                 <h3 class="section-title" style="font-size:22px; margin-bottom:10px;">关于</h3>
                 <div class="backup-desc" style="margin-bottom:0;">
-                    美好生活记录 · v2.1.0<br>
+                    美好生活记录 · v2.2.0<br>
                     所有数据仅保存在你的浏览器中，不会上传到任何服务器。<br><br>
                     <span style="color:#999; font-size:13px;">HRT 记录功能已跳转至独立工具站点；解梦、小六壬仅供民俗娱乐。</span>
                 </div>
@@ -2613,7 +2634,7 @@ function renderRecords() {
         const catHtml = r.category ? `<span class="record-category">${esc(r.category)}</span>` : '';
         
         return `
-        <div class="record-item">
+        <div class="record-item" data-rid="${r.id}">
             <div class="record-text">
                 ${esc(r.text) || '<span style="color:#9ca3af;">（图片记录）</span>'}
                 <div class="record-meta">
@@ -2764,7 +2785,7 @@ function renderTreeholes() {
         const catHtml = t.category ? `<span class="treehole-category">${esc(t.category)}</span>` : '';
         
         return `
-        <div class="record-item treehole-item">
+        <div class="record-item treehole-item" data-tid="${t.id}">
             <div class="record-text">
                 ${esc(t.text) || '<span style="color:#9ca3af;">（图片记录）</span>'}
                 <div class="record-meta">
@@ -3175,6 +3196,7 @@ function renderDiaryList() {
                 '<div class="diary-foot">' +
                     '<span>' + timeText + '</span>' +
                     '<span class="diary-ops">' +
+                        '<button class="speak-btn" onclick="speakDiary(\'' + d.id + '\')" aria-label="朗读这篇日记">🔊 朗读</button>' +
                         '<button class="btn-mini" onclick="openCollectSheet(\'' + d.id + '\')">收纳</button>' +
                         '<button class="btn-mini" onclick="editDiary(\'' + d.id + '\')">编辑</button>' +
                         '<button class="btn-del" onclick="deleteDiary(\'' + d.id + '\')">删除</button>' +
@@ -4636,6 +4658,90 @@ var SFX = (function () {
     body.night .diary-date-week { color: #c99aa8; }
     body.night .image-upload-area { background: rgba(255,255,255,0.04); border-color: #4a3f38; color: #a2917f; }
 
+    /* ===== v2.2 全局搜索 ===== */
+    .search-overlay {
+        position: fixed; inset: 0; z-index: 960; display: none;
+        background: rgba(26, 21, 19, 0.55);
+        backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        padding: 20px 14px;
+    }
+    .search-overlay.open { display: flex; justify-content: center; align-items: flex-start; }
+    .search-panel {
+        width: min(560px, 100%); max-height: 86vh; display: flex; flex-direction: column;
+        background: #fffdf9; border-radius: 20px; overflow: hidden;
+        box-shadow: 0 18px 60px rgba(0,0,0,0.4);
+    }
+    .search-head { display: flex; gap: 10px; padding: 14px; border-bottom: 1px solid #f0e4d4; }
+    .search-head input {
+        flex: 1; border: none; outline: none; background: #f7f0e4;
+        border-radius: 12px; padding: 10px 14px; font-size: 15.5px; color: #4b3f3a;
+    }
+    .search-head button {
+        border: none; background: #d9466f; color: #fff; border-radius: 12px;
+        padding: 0 16px; font-size: 14px; cursor: pointer;
+    }
+    .search-body { overflow-y: auto; padding: 6px 14px 14px; }
+    .search-group { margin-top: 10px; }
+    .search-group-title { font-size: 12.5px; color: #a08d80; margin-bottom: 4px; }
+    .search-hit {
+        padding: 9px 10px; border-radius: 12px; cursor: pointer; transition: 0.15s;
+        display: flex; gap: 8px; align-items: baseline;
+    }
+    .search-hit:hover, .search-hit:active { background: #f7f0e4; }
+    .search-hit-when { flex-shrink: 0; font-size: 12px; color: #b3a49c; }
+    .search-hit-text { flex: 1; min-width: 0; font-size: 14px; color: #4b3f3a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .search-hit-text b { color: #d9466f; }
+    .search-empty { text-align: center; color: #a08d80; font-size: 13.5px; padding: 26px 0 18px; }
+    .locate-flash { animation: locFlash 1.8s ease-out; }
+    @keyframes locFlash {
+        0%, 60% { box-shadow: 0 0 0 3px rgba(217, 70, 111, 0.55), 0 0 26px rgba(217,70,111,0.35); }
+        100% { box-shadow: none; }
+    }
+    body.night .search-panel { background: #262020; }
+    body.night .search-head { border-bottom-color: #3a322c; }
+    body.night .search-head input { background: #2b2521; color: #e8dcc8; }
+    body.night .search-hit:hover, body.night .search-hit:active { background: #2b2521; }
+    body.night .search-hit-text { color: #d9cbb8; }
+
+    /* ===== v2.2 心情×注射周期 ===== */
+    .cycle-card { margin-top: 16px; }
+    .cycle-days { display: flex; align-items: flex-end; gap: 7px; height: 118px; padding: 10px 4px 0; }
+    .cycle-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 0; }
+    .cycle-bar {
+        width: 100%; border-radius: 7px 7px 3px 3px; min-height: 3px;
+        background: linear-gradient(180deg, #f3c8c2, #d9466f); transition: height 0.6s ease;
+    }
+    .cycle-bar.low { background: linear-gradient(180deg, #b9c6d4, #7b8aa0); }
+    .cycle-lab { font-size: 10.5px; color: #a08d80; text-align: center; line-height: 1.25; }
+    .cycle-lab b { color: #6b5b4f; font-size: 11px; display: block; }
+    .cycle-insight { font-size: 13px; color: #7a6a60; line-height: 1.75; margin-top: 10px; padding: 10px 12px; background: #fbf3e4; border-radius: 12px; }
+    body.night .cycle-insight { background: rgba(251,243,228,0.07); color: #b5a390; }
+    body.night .cycle-lab { color: #8d7d6d; }
+    body.night .cycle-lab b { color: #c9b8a3; }
+
+    /* ===== v2.2 后台隐私模糊 ===== */
+    body.privacy-blur::after {
+        content: ''; position: fixed; inset: 0; z-index: 99999;
+        background: rgba(28, 26, 25, 0.94);
+    }
+    body.privacy-blur::before {
+        content: '🔒 内容已隐藏'; position: fixed; left: 0; right: 0; top: 44%;
+        text-align: center; z-index: 100000; color: #8d7d6d; font-size: 15px;
+        letter-spacing: 2px;
+    }
+
+    /* ===== v2.2 记忆卡查看全文 / 日记朗读 ===== */
+    .memory-locate {
+        margin-top: 10px; width: 100%; padding: 9px 0; border-radius: 12px;
+        border: 1px solid rgba(232,160,168,0.55); background: rgba(243,200,194,0.10);
+        color: #c96a78; font-size: 14px; cursor: pointer;
+    }
+    .speak-btn {
+        border: 1px solid #e8c8a8; background: #fff9f0; color: #a07840;
+        border-radius: 999px; padding: 3px 11px; font-size: 12.5px; cursor: pointer;
+    }
+    body.night .speak-btn { background: #2b2521; border-color: #6a4a4a; color: #d9b48a; }
+
 </style>
 
 <div class="hrt-overlay" id="hrtOverlay">
@@ -4672,6 +4778,17 @@ var SFX = (function () {
     <div class="perf-keys" id="perfKeys"></div>
 </div>
 
+<!-- ===== v2.2 全局搜索 ===== -->
+<div class="search-overlay" id="searchOverlay" role="dialog" aria-label="全局搜索">
+    <div class="search-panel">
+        <div class="search-head">
+            <input id="searchInput" placeholder="搜日记、小确幸、树洞、时间胶囊……" aria-label="搜索关键词">
+            <button onclick="closeSearch()">✕</button>
+        </div>
+        <div class="search-body" id="searchBody"></div>
+    </div>
+</div>
+
 <!-- ===== v2.1 时间胶囊拆封仪式 ===== -->
 <div class="cap-open-overlay" id="capOpenOverlay" role="dialog" aria-label="拆开时间胶囊"></div>
 
@@ -4680,6 +4797,7 @@ var SFX = (function () {
     <div class="memory-head"><span>🕰</span><span id="memHeadText">往年今日</span><span style="flex:1"></span><span id="memDateText" style="font-weight:400;"></span></div>
     <div class="memory-text" id="memText"></div>
     <div class="memory-shake" id="memShakeHint" onclick="if(navigator.userAgent.includes('iPhone')||navigator.userAgent.includes('iPad'))enableShake()">摇一摇手机 · 也能翻出一段回忆</div>
+    <button class="memory-locate" id="memLocateBtn" style="display:none;" onclick="locateMemory()">查看全文 →</button>
     <div class="memory-acts">
         <button class="perf-btn" onclick="cycleMemory()">换一段</button>
         <button class="perf-btn" onclick="hideMemory(true)">收起</button>
@@ -5214,6 +5332,7 @@ var SFX = (function () {
                     '<div style="position:absolute; top:14px; right:14px;"><button class="btn-del" onclick="deleteCapsule(\'' + c.id + '\')">删除</button></div>';
             }
             var cls = 'cap-card' + (unlocked ? (c.openedAt ? '' : ' ready-to-open') : ' locked');
+            cls += '" data-cid="' + c.id;
             if (highlightId && c.id === highlightId) cls += ' cap-card-just';
             return '<div class="' + cls + '" style="position:relative;">' + inner + '</div>';
         }).join('');
@@ -5250,13 +5369,13 @@ var SFX = (function () {
     function collectMemories() {
         var out = [];
         records.forEach(function (r) {
-            if (r.time) out.push({ kind: '小确幸', when: new Date(r.time), text: (r.text || '') + (r.images && r.images.length ? ' 📷' : ''), mood: r.mood });
+            if (r.time) out.push({ kind: '小确幸', when: new Date(r.time), text: (r.text || '') + (r.images && r.images.length ? ' 📷' : ''), mood: r.mood, id: r.id, tab: 'photo' });
         });
         treeholes.forEach(function (t) {
-            if (t.time) out.push({ kind: '树洞', when: new Date(t.time), text: t.text || '', mood: t.mood });
+            if (t.time) out.push({ kind: '树洞', when: new Date(t.time), text: t.text || '', mood: t.mood, id: t.id, tab: 'treehole' });
         });
         diaries.forEach(function (d) {
-            if (d.date) out.push({ kind: '日记', when: new Date(d.date + 'T12:00:00'), text: (d.title ? '《' + d.title + '》 ' : '') + (d.content || ''), mood: d.mood });
+            if (d.date) out.push({ kind: '日记', when: new Date(d.date + 'T12:00:00'), text: (d.title ? '《' + d.title + '》 ' : '') + (d.content || ''), mood: d.mood, id: d.id, tab: 'diary' });
         });
         return out.filter(function (m) { return m.text && m.when && !isNaN(m.when); });
     }
@@ -5272,7 +5391,14 @@ var SFX = (function () {
         var limit = new Date(Date.now() - 30 * 86400000);
         return collectMemories().filter(function (m) { return m.when < limit; });
     }
+    window.locateMemory = function () {
+        if (!curMemory || !curMemory.id) return;
+        hideMemory(false);
+        setTimeout(function () { locateItem(curMemory.tab, curMemory.id); }, 60);
+    };
+    var curMemory = null;
     window.showMemory = function (m, headText) {
+        curMemory = m;
         if (!m) return;
         var card = document.getElementById('memoryCard');
         document.getElementById('memHeadText').textContent = headText || '往年今日';
@@ -5282,6 +5408,8 @@ var SFX = (function () {
         var txt = m.text.length > 88 ? m.text.slice(0, 88) + '…' : m.text;
         document.getElementById('memText').innerHTML = '<span style="color:#a06a56;font-size:13px;">【' + m.kind + '】</span> ' + esc2(txt) +
             (m.mood ? ' <span style="opacity:.75;">' + esc2(m.mood) + '</span>' : '');
+        var loc = document.getElementById('memLocateBtn');
+        if (loc) loc.style.display = (m.id && m.tab) ? '' : 'none';
         card.classList.add('show');
         try { SFX.cue('memory'); } catch (e) {}
     };
@@ -5845,6 +5973,282 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && !/[?&]embe
         });
     })();
 }
+</script>
+
+<script>
+// ===== v2.2 全局搜索 / 定位跳转 / 心情×注射周期 / 后台隐私 / 日记朗读 =====
+(function () {
+    'use strict';
+
+    // ---------- 工具 ----------
+    function esc3(t) {
+        return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+    function fmtD(ts) {
+        var d = new Date(ts);
+        return (d.getMonth() + 1) + '月' + d.getDate() + '日';
+    }
+
+    // ---------- 定位跳转：switchTab + 滚动 + 高亮 ----------
+    window.locateItem = function (tab, id) {
+        try { switchTab(tab); } catch (e) {}
+        var attempt = 0;
+        var t = setInterval(function () {
+            attempt++;
+            var el = null;
+            if (tab === 'diary') el = document.getElementById('diary-item-' + id);
+            else if (tab === 'photo') el = document.querySelector('.record-item:not(.treehole-item)[data-rid="' + id + '"]');
+            else if (tab === 'treehole') el = document.querySelector('.treehole-item[data-tid="' + id + '"]');
+            else if (tab === 'countdown') el = document.querySelector('.cap-card[data-cid="' + id + '"]');
+            if (el) {
+                clearInterval(t);
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.classList.remove('locate-flash');
+                void el.offsetWidth;
+                el.classList.add('locate-flash');
+                setTimeout(function () { el.classList.remove('locate-flash'); }, 1900);
+            } else if (attempt > 40) clearInterval(t);
+        }, 60);
+    };
+
+    // ---------- 全局搜索 ----------
+    var searchTimer = null;
+    window.openSearch = function () {
+        var ov = document.getElementById('searchOverlay');
+        ov.classList.add('open');
+        var inp = document.getElementById('searchInput');
+        inp.value = '';
+        inp.focus();
+        renderSearchResults('');
+    };
+    window.closeSearch = function () {
+        document.getElementById('searchOverlay').classList.remove('open');
+    };
+    document.getElementById('searchOverlay').addEventListener('click', function (e) {
+        if (e.target === this) closeSearch();
+    });
+    document.getElementById('searchInput').addEventListener('input', function () {
+        clearTimeout(searchTimer);
+        var v = this.value;
+        searchTimer = setTimeout(function () { renderSearchResults(v); }, 220);
+    });
+    document.getElementById('searchInput').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); var f = document.querySelector('.search-hit'); if (f) f.click(); }
+        if (e.key === 'Escape') closeSearch();
+    });
+
+    function highlight(text, q) {
+        var t = String(text || '');
+        var i = t.toLowerCase().indexOf(q.toLowerCase());
+        if (i < 0) return esc3(t.slice(0, 40));
+        var st = Math.max(0, i - 12);
+        var pre = st > 0 ? '…' : '';
+        return esc3(pre + t.slice(st, i)) + '<b>' + esc3(t.slice(i, i + q.length)) + '</b>' + esc3(t.slice(i + q.length, i + q.length + 30));
+    }
+
+    function renderSearchResults(q) {
+        q = (q || '').trim().toLowerCase();
+        var body = document.getElementById('searchBody');
+        if (!q) { body.innerHTML = '<div class="search-empty">输入关键词，搜遍你的日记、小确幸、树洞和时间胶囊 ✨</div>'; return; }
+        var groups = [];
+        var g1 = diaries.filter(function (d) {
+            return ((d.title || '') + (d.content || '')).toLowerCase().indexOf(q) >= 0;
+        }).slice(0, 8).map(function (d) {
+            return { id: d.id, when: d.date, text: (d.title ? '《' + d.title + '》' : '') + (d.content || '') };
+        });
+        if (g1.length) groups.push(['📝 日记', 'diary', g1]);
+        var g2 = records.filter(function (r) {
+            return ((r.text || '') + (r.category || '')).toLowerCase().indexOf(q) >= 0;
+        }).slice(0, 8).map(function (r) {
+            return { id: r.id, when: fmtD(r.time), text: (r.images && r.images.length ? '📷 ' : '') + (r.text || '') };
+        });
+        if (g2.length) groups.push(['✨ 小确幸', 'photo', g2]);
+        var g3 = treeholes.filter(function (t2) {
+            return ((t2.text || '') + (t2.category || '')).toLowerCase().indexOf(q) >= 0;
+        }).slice(0, 8).map(function (t2) {
+            return { id: t2.id, when: fmtD(t2.time), text: t2.text || '' };
+        });
+        if (g3.length) groups.push(['🕳 树洞', 'treehole', g3]);
+        var capList = (typeof loadJSON === 'function') ? loadJSON('capsules', []) : [];
+        var g4 = capList.filter(function (c) {
+            var hay = c.openedAt ? ((c.title || '') + (c.content || '')) : (c.title || '');
+            return hay.toLowerCase().indexOf(q) >= 0;
+        }).slice(0, 8).map(function (c) {
+            return { id: c.id, when: c.unlockDate, text: (c.openedAt ? '' : '🔒 ') + (c.title || '') + (c.openedAt ? '：' + (c.content || '') : '') };
+        });
+        if (g4.length) groups.push(['🕰 时间胶囊', 'countdown', g4]);
+
+        if (!groups.length) { body.innerHTML = '<div class="search-empty">没有找到「' + esc3(q) + '」，换个词试试？</div>'; return; }
+        body.innerHTML = groups.map(function (g) {
+            return '<div class="search-group"><div class="search-group-title">' + g[0] + '</div>' +
+                g[2].map(function (h) {
+                    return '<div class="search-hit" onclick="closeSearch();locateItem(\'' + g[1] + '\', \'' + h.id + '\')">' +
+                        '<span class="search-hit-when">' + esc3(h.when) + '</span>' +
+                        '<span class="search-hit-text">' + highlight(h.text, q) + '</span></div>';
+                }).join('') + '</div>';
+        }).join('');
+    }
+
+    // ---------- 心情 × 注射周期 ----------
+    var MOOD_SCORE = {
+        '😊 开心': 4, '🥰 幸福': 5, '😋 满足': 4, '😌 治愈': 4, '🎉 惊喜': 4, '🌤 平静': 3,
+        '😢 难过': 2, '😫 疲惫': 2, '😡 烦躁': 1
+    };
+    function hrtInjections() { // HRT 模块（同源）的注射时刻，毫秒
+        try {
+            var ev = JSON.parse(localStorage.getItem('app-events-v2') || 'null');
+            if (!ev) return [];
+            var arr = (ev.transfem || []).concat(ev.transmasc || []);
+            return arr.filter(function (e) { return e.route === 'injection' && e.timeH; })
+                .map(function (e) { return e.timeH * 3600000; }).sort(function (a, b) { return b - a; });
+        } catch (e) { return []; }
+    }
+    function moodEntries() { // 全部心情记录 {ts, score}
+        var out = [];
+        records.forEach(function (r) { if (r.mood && MOOD_SCORE[r.mood] && r.time) out.push({ ts: new Date(r.time).getTime(), sc: MOOD_SCORE[r.mood] }); });
+        treeholes.forEach(function (t) { if (t.mood && MOOD_SCORE[t.mood] && t.time) out.push({ ts: new Date(t.time).getTime(), sc: MOOD_SCORE[t.mood] }); });
+        diaries.forEach(function (d) { if (d.mood && MOOD_SCORE[d.mood] && d.date) out.push({ ts: new Date(d.date + 'T12:00:00').getTime(), sc: MOOD_SCORE[d.mood] }); });
+        return out;
+    }
+    function dayFloor(ts) { var d = new Date(ts); d.setHours(0, 0, 0, 0); return d.getTime(); }
+    window.renderCycleCard = function () {
+        var card = document.getElementById('cycleCard');
+        if (!card) return;
+        var injs = hrtInjections();
+        var moods = moodEntries();
+        if (!injs.length || !moods.length) { card.style.display = 'none'; return; }
+        card.style.display = '';
+        var buckets = {};
+        moods.forEach(function (m) {
+            for (var i = 0; i < injs.length; i++) {
+                if (injs[i] <= m.ts) {
+                    var delta = Math.round((dayFloor(m.ts) - dayFloor(injs[i])) / 86400000);
+                    if (delta >= 0 && delta <= 6) (buckets[delta] = buckets[delta] || []).push(m.sc);
+                    break;
+                }
+            }
+        });
+        var stats = [];
+        for (var d = 0; d <= 6; d++) {
+            var arr = buckets[d] || [];
+            var avg = arr.length ? arr.reduce(function (a, b) { return a + b; }, 0) / arr.length : null;
+            stats.push({ d: d, n: arr.length, avg: avg });
+        }
+        var hasAny = stats.some(function (s2) { return s2.n > 0; });
+        if (!hasAny) {
+            document.getElementById('cycleDays').innerHTML = '';
+            document.getElementById('cycleInsightWrap').innerHTML =
+                '<div class="cycle-insight">注射和心情记录还没碰到一起。继续记下去，这里会慢慢长出属于你的规律 🌱</div>';
+            document.getElementById('cycleSub').textContent = '把每次心情按注射后的天数对齐';
+            return;
+        }
+        var maxAvg = 3.4;
+        stats.forEach(function (s2) { if (s2.avg != null && s2.avg > maxAvg) maxAvg = s2.avg; });
+        var NAMES = ['注射日', '次日', '第2天', '第3天', '第4天', '第5天', '第6天'];
+        document.getElementById('cycleDays').innerHTML = stats.map(function (s2) {
+            var h = s2.avg == null ? 3 : Math.max(4, s2.avg / maxAvg * 104);
+            var cls = (s2.avg != null && s2.avg < 3) ? ' low' : '';
+            return '<div class="cycle-col">' +
+                '<div class="cycle-bar' + cls + '" style="height:' + h + 'px;" title="' + (s2.avg == null ? '无数据' : '平均 ' + s2.avg.toFixed(1) + ' · ' + s2.n + ' 条') + '"></div>' +
+                '<div class="cycle-lab"><b>' + NAMES[s2.d] + '</b>' + (s2.n ? s2.n + '条' : '—') + '</div></div>';
+        }).join('');
+        document.getElementById('cycleSub').textContent = '把每次心情按注射后的天数对齐 · 共 ' + moods.length + ' 条心情';
+        var scored = stats.filter(function (s2) { return s2.avg != null; });
+        var best = scored.reduce(function (a, b) { return (b.avg > a.avg ? b : a); }, scored[0]);
+        var worst = scored.reduce(function (a, b) { return (b.avg < a.avg ? b : a); }, scored[0]);
+        var total = scored.reduce(function (a, b) { return a + b.n; }, 0);
+        var insight = '最近一次注射：' + fmtD(injs[0]) + '。';
+        if (best.avg - worst.avg >= 0.6 && best.n >= 2 && worst.n >= 2) {
+            insight += '「' + NAMES[best.d] + '」的你平均心情最好（' + best.avg.toFixed(1) + '），而「' + NAMES[worst.d] + '」相对低落（' + worst.avg.toFixed(1) + '）——打完针第 ' + best.d + ' 天的温柔，被数据看见了。';
+        } else if (stats[1].avg != null && stats[1].n >= 3 && stats[1].avg >= 3.5) {
+            insight += '打完针第二天的你，心情总是格外好 ✨';
+        } else {
+            insight += '目前还没有明显的周期规律，等心情样本再多一些，说不定会看见惊喜。';
+        }
+        document.getElementById('cycleInsightWrap').innerHTML =
+            '<div class="cycle-insight">' + esc3(insight) + '<div style="font-size:11.5px;color:#b3a49c;margin-top:4px;">基于 ' + total + ' 条对照记录 · 仅个人参考</div></div>';
+    };
+    renderCycleCard();
+    setInterval(renderCycleCard, 60000 * 5);
+
+    // ---------- 后台隐私模糊（切后台盖住内容，防任务栏偷瞄） ----------
+    window.privacyBlurOn = function () {
+        try { return (localStorage.getItem('sn-privacy-blur') || '1') === '1'; } catch (e) { return true; }
+    };
+    document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'hidden') {
+            if (privacyBlurOn()) document.body.classList.add('privacy-blur');
+        } else {
+            document.body.classList.remove('privacy-blur');
+        }
+    });
+
+    // ---------- 日记朗读 ----------
+    window.speakDiary = function (id) {
+        var d = diaries.find(function (x) { return x.id === id; });
+        if (!d) return;
+        var btn = document.querySelector('#diary-item-' + id + ' .speak-btn');
+        if (!('speechSynthesis' in window)) { alert('这个浏览器还不支持朗读'); return; }
+        if (speechSynthesis.speaking) {
+            speechSynthesis.cancel();
+            if (btn) btn.textContent = '🔊 朗读';
+            return;
+        }
+        var text = (d.title ? d.title + '。' : '') + (d.content || '');
+        var u = new SpeechSynthesisUtterance(text.slice(0, 1200));
+        u.lang = 'zh-CN';
+        u.rate = 0.97;
+        u.onend = function () { if (btn) btn.textContent = '🔊 朗读'; };
+        u.onerror = function () { if (btn) btn.textContent = '🔊 朗读'; };
+        speechSynthesis.speak(u);
+        if (btn) btn.textContent = '⏹ 停止';
+    };
+
+    // ---------- 设置：隐私开关 + 应用锁 ----------
+    window.togglePrivacyBlur = function () {
+        var cur = privacyBlurOn();
+        try { localStorage.setItem('sn-privacy-blur', cur ? '0' : '1'); } catch (e) {}
+        refreshPrivacyUI();
+    };
+    window.toggleAppLock = function () {
+        if (!(window.NativePrivacy && NativePrivacy.isAvailable())) return;
+        var next = !NativePrivacy.isEnabled();
+        NativePrivacy.setEnabled(next);
+        if (next) { try { NativePrivacy.lockNow(); } catch (e) {} } // 立即体验一次解锁
+        refreshPrivacyUI();
+    };
+    function refreshPrivacyUI() {
+        var b = document.getElementById('privacyBlurBtn');
+        if (b) {
+            var on = privacyBlurOn();
+            b.textContent = on ? '开启（点击切换）' : '关闭（点击切换）';
+            b.classList.toggle('on', on);
+        }
+        var row = document.getElementById('appLockRow');
+        var ab = document.getElementById('appLockBtn');
+        var native = !!(window.NativePrivacy && NativePrivacy.isAvailable());
+        if (row) row.style.display = native ? '' : 'none';
+        if (ab && native) {
+            var on2 = NativePrivacy.isEnabled();
+            ab.textContent = on2 ? '开启（点击切换）' : '关闭（点击切换）';
+            ab.classList.toggle('on', on2);
+        }
+    }
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        refreshPrivacyUI();
+    } else {
+        document.addEventListener('DOMContentLoaded', refreshPrivacyUI);
+    }
+
+    // 数据刷新联动
+    var _origV2Refresh = window.v2Refresh;
+    window.v2Refresh = function () {
+        if (_origV2Refresh) _origV2Refresh();
+        renderCycleCard();
+    };
+})();
 </script>
 </body>
 </html>
