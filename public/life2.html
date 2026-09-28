@@ -66,7 +66,7 @@
         .nav-btn:hover {
             background: rgba(255,255,255,0.2);
         }
-        /* ===== UI 版本切换按钮（新增，不影响原样式） ===== */
+        /* ===== UI 版本切换按钮（合作者隔离方案：与 life.html 互通） ===== */
         .nav-actions {
             display: flex;
             align-items: center;
@@ -304,27 +304,6 @@
             gap: 14px;
         }
         /* ===== 小确幸模块样式 ===== */
-        .mood-selector {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 18px;
-        }
-        .mood-tag {
-            padding: 6px 14px;
-            border-radius: 999px;
-            background: #f5f7fa;
-            color: #6b7280;
-            font-size: 14px;
-            cursor: pointer;
-            transition: 0.2s;
-            border: 1px solid transparent;
-        }
-        .mood-tag.active {
-            background: #fff0f3;
-            color: #d9466f;
-            border-color: #f8c8d4;
-        }
         .image-upload-area {
             border: 2px dashed #e5e7eb;
             border-radius: 12px;
@@ -487,11 +466,6 @@
             margin-top: 6px;
         }
         /* ===== 树洞模块样式 ===== */
-        .treehole-mood-tag.active {
-            background: #eef2f7;
-            color: #4b5563;
-            border-color: #d1d5db;
-        }
         .treehole-item {
             background: #f9fafb;
             border: 1px solid #e5e7eb;
@@ -1089,8 +1063,6 @@
             -webkit-user-select: none;
             user-select: none;
         }
-        /* 行内标签启用按压形变需先变为 inline-block */
-        .switch-text span.ripple-on, .dream-hot-tags span.ripple-on { display: inline-block; }
         /* 水波主体：柔和的实心波 */
         .ripple-wave {
             position: absolute;
@@ -1150,9 +1122,592 @@
         @media (prefers-reduced-motion: reduce) {
             .ripple-wave, .ripple-ring, .ripple-ambient-glow, .ripple-ambient-ring, .ripple-edge-flash { display: none; }
         }
+
+        /* ============================================================
+           v2.2 UI 焕新 · 「纸间岁月」主题
+           仅视觉层：暖纸底色 + 水彩晕影 + 文学衬线标题 + 玫瑰金细节
+           不改动任何逻辑 / 数据 / 登录行为
+           ============================================================ */
+        :root {
+            --rose: #d9466f;
+            --rose-deep: #be185d;
+            --gold: #d4b078;
+            --ink: #3a332d;
+            --ink-soft: #8a7d72;
+            --line-warm: #f3e9e2;
+            --font-serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", "STZhongsong", "SimSun", serif;
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+            background-color: #faf6f1;
+            background-image:
+                radial-gradient(1200px 520px at 88% -140px, rgba(244, 178, 190, 0.16), transparent 62%),
+                radial-gradient(960px 460px at -12% 220px, rgba(250, 218, 168, 0.15), transparent 60%),
+                radial-gradient(1100px 640px at 50% 115%, rgba(210, 178, 218, 0.10), transparent 66%);
+            background-attachment: fixed;
+            transition: background-color 0.8s ease, color 0.8s ease;
+        }
+        ::selection { background: rgba(217, 70, 111, 0.20); }
+        /* 细玫瑰金滚动条 */
+        ::-webkit-scrollbar { width: 9px; height: 9px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb {
+            background: #e8c9cf;
+            background-clip: padding-box;
+            border: 2px solid transparent;
+            border-radius: 99px;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: #dda4b4; background-clip: padding-box; border: 2px solid transparent; }
+        html { scrollbar-color: #e0b6c0 transparent; }
+
+        /* ---- 顶部导航：暗金玻璃 ---- */
+        .top-nav {
+            background: rgba(26, 22, 20, 0.80);
+            backdrop-filter: blur(14px) saturate(1.25);
+            -webkit-backdrop-filter: blur(14px) saturate(1.25);
+            box-shadow: inset 0 -1px 0 rgba(212, 176, 120, 0.14), 0 10px 30px -22px rgba(0, 0, 0, 0.7);
+        }
+        .nav-logo { letter-spacing: 1.5px; }
+        .nav-logo-icon {
+            background: linear-gradient(135deg, #ecd096, #c69a5c);
+            color: #2a2018;
+            box-shadow: 0 3px 10px -3px rgba(196, 154, 92, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+        .nav-btn { transition: 0.2s; }
+        .nav-btn:hover { transform: translateY(-1px); background: rgba(255, 255, 255, 0.18); }
+
+        /* ---- 首屏海报：星屑 + 渐变金字 + 圆弧收底 ---- */
+        .hero-banner {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            border-radius: 0 0 30px 30px;
+            background:
+                radial-gradient(720px 300px at 78% -60px, rgba(212, 176, 120, 0.16), transparent 65%),
+                radial-gradient(560px 260px at 12% 108%, rgba(217, 70, 111, 0.10), transparent 62%),
+                linear-gradient(180deg, #1c1a19 0%, #2a2420 100%);
+        }
+        .hero-banner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            background-image:
+                radial-gradient(1.6px 1.6px at 14% 26%, rgba(255, 236, 200, 0.9) 50%, transparent 51%),
+                radial-gradient(1.2px 1.2px at 32% 62%, rgba(255, 236, 200, 0.6) 50%, transparent 51%),
+                radial-gradient(1.8px 1.8px at 55% 20%, rgba(255, 244, 220, 0.85) 50%, transparent 51%),
+                radial-gradient(1.2px 1.2px at 71% 48%, rgba(255, 236, 200, 0.55) 50%, transparent 51%),
+                radial-gradient(1.5px 1.5px at 86% 30%, rgba(255, 236, 200, 0.8) 50%, transparent 51%),
+                radial-gradient(1.1px 1.1px at 92% 70%, rgba(255, 236, 200, 0.5) 50%, transparent 51%),
+                radial-gradient(1.4px 1.4px at 8% 78%, rgba(255, 236, 200, 0.55) 50%, transparent 51%);
+            animation: heroTwinkle 5.5s ease-in-out infinite alternate;
+        }
+        @keyframes heroTwinkle {
+            from { opacity: 0.45; }
+            to { opacity: 1; }
+        }
+        .hero-title {
+            font-family: var(--font-serif);
+            letter-spacing: 2px;
+            background: linear-gradient(118deg, #f3dc9f 0%, #d4b078 48%, #c99f63 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero-btns .btn-primary, .hero-btns .btn-outline { box-shadow: 0 10px 26px -12px rgba(0, 0, 0, 0.6); }
+
+        /* ---- 金色主按钮：内高光 + 悬浮微升 ---- */
+        .btn-primary {
+            position: relative;
+            background: linear-gradient(135deg, #eacd93, #c99a5f);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 8px 20px -8px rgba(184, 146, 92, 0.55);
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 12px 26px -10px rgba(184, 146, 92, 0.6); }
+        .btn-primary:active { transform: translateY(0) scale(0.98); }
+        .btn-outline:hover { transform: translateY(-1px); background: rgba(212, 176, 120, 0.12); }
+        .btn-outline:active { transform: scale(0.98); }
+        .btn-del:hover { transform: translateY(-1px); }
+        .btn-mini:hover { transform: translateY(-1px); }
+
+        /* ---- 卡片：暖纸渐面 + 层叠柔影 ---- */
+        .card {
+            background: linear-gradient(180deg, #fffefd 0%, #fffaf4 100%);
+            border: 1px solid var(--line-warm);
+            box-shadow: 0 1px 2px rgba(90, 66, 50, 0.04), 0 16px 40px -22px rgba(190, 120, 100, 0.20);
+            transition: box-shadow 0.35s ease, background-color 0.6s ease;
+        }
+        /* 列表类卡片：悬停轻浮起（仅指针设备） */
+        .record-item, .diary-item, .dream-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        @media (hover: hover) {
+            .record-item:hover, .diary-item:hover, .dream-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(90, 66, 50, 0.05), 0 20px 44px -22px rgba(190, 120, 100, 0.28);
+            }
+        }
+
+        /* ---- 标题：文学衬线 + 玫瑰金小笔触 ---- */
+        .section-title {
+            font-family: var(--font-serif);
+            letter-spacing: 0.5px;
+            position: relative;
+            padding-bottom: 12px;
+        }
+        .section-title::after {
+            content: '';
+            position: absolute;
+            left: 2px;
+            bottom: 3px;
+            width: 44px;
+            height: 4px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #e8a0a8, #d4b078);
+            opacity: 0.85;
+        }
+
+        /* ---- 空状态：虚线信笺 ---- */
+        .tip-text {
+            border: 1.5px dashed #ecd9cf;
+            background: rgba(255, 255, 255, 0.62);
+            border-radius: 18px;
+            padding: 30px 16px;
+            margin: 26px 0;
+        }
+
+        /* ---- 输入框：暖白底 + 玫瑰聚焦环 ---- */
+        .form-input, .form-select {
+            background: #fffdfb;
+            border: 1px solid #eee3da;
+            border-radius: 14px;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+        }
+        .form-input:focus, .form-select:focus {
+            border-color: #e8a0a8;
+            box-shadow: 0 0 0 4px rgba(217, 70, 111, 0.10);
+            background: #fff;
+        }
+        .form-input::placeholder { color: #c4b5aa; }
+        /* 滑杆：玫瑰金轨道 */
+        input[type="range"] { accent-color: #d9466f; }
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: 6px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #e8a0a8, #f3ddc9);
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            margin-top: -6px;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid #e8a0a8;
+            box-shadow: 0 2px 8px -2px rgba(217, 70, 111, 0.45);
+        }
+        input[type="range"]::-moz-range-track {
+            height: 6px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #e8a0a8, #f3ddc9);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid #e8a0a8;
+            box-shadow: 0 2px 8px -2px rgba(217, 70, 111, 0.45);
+        }
+
+        /* ---- 筛选标签 ---- */
+        .filter-tag { transition: 0.2s; }
+        .filter-tag:hover { transform: translateY(-1px); }
+        .filter-tag.active {
+            background: linear-gradient(135deg, #e26a8b, #d9466f);
+            box-shadow: 0 3px 12px -4px rgba(217, 70, 111, 0.5);
+        }
+
+        /* ---- 图片上传与预览 ---- */
+        .image-upload-area {
+            border: 2px dashed #eddcd2;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #fffdfb, #fdf6f0);
+        }
+        .image-upload-area:hover { border-color: #e8a0a8; background: #fff5f7; }
+        .record-images { border-radius: 12px; }
+        .record-images img { transition: transform 0.3s ease; }
+        .record-images img:hover { transform: scale(1.045); }
+
+        /* ---- 列表条目暖化 ---- */
+        .record-filter {
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--line-warm);
+            border-radius: 18px;
+        }
+        .treehole-item { background: #faf7f4; border-color: #efe6de; }
+        .coll-manage-panel { border-color: var(--line-warm); }
+        .dream-search-box { border-color: var(--line-warm); }
+
+        /* ---- 倒数日：暖金渐变 + 左侧光带 ---- */
+        .countdown-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #fff8ec 0%, #fffdf8 55%, #fdf3e2 100%);
+            border: 1px solid #f7e8d2;
+            box-shadow: 0 12px 30px -18px rgba(196, 148, 87, 0.40);
+        }
+        .countdown-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 12px;
+            bottom: 12px;
+            width: 4px;
+            border-radius: 0 999px 999px 0;
+            background: linear-gradient(180deg, #f0c987, #e8a05a);
+        }
+        .countdown-num {
+            font-family: var(--font-serif);
+            background: linear-gradient(135deg, #f0a24b, #d97706);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ---- 小六壬结果 ---- */
+        .liuren-box {
+            background: linear-gradient(160deg, #fffaf1, #fdf2e2);
+            border: 1px solid #f7e8d2;
+            box-shadow: 0 14px 36px -22px rgba(196, 148, 87, 0.45);
+        }
+        .result-name { font-family: var(--font-serif); }
+        .result-box { border: 1px solid var(--line-warm); }
+
+        /* ---- 日记：衬线日期牌 ---- */
+        .diary-date {
+            background: linear-gradient(160deg, #fdeef4, #fbe0ec);
+            box-shadow: inset 0 0 0 1px #f7d3e2;
+        }
+        .diary-date-day { font-family: var(--font-serif); }
+        .diary-item { border-color: var(--line-warm); }
+
+        /* ---- 弹窗与浮层 ---- */
+        .mask {
+            background: rgba(30, 22, 20, 0.50);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .popup {
+            position: relative;
+            overflow: hidden;
+            border-radius: 26px;
+            background: linear-gradient(180deg, #ffffff, #fffaf5);
+            box-shadow: 0 28px 70px -24px rgba(70, 35, 35, 0.55);
+        }
+        .popup::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #e8a0a8, #d4b078, #e8a0a8);
+        }
+        .popup h3 { font-family: var(--font-serif); letter-spacing: 1px; }
+        .sheet {
+            border-radius: 24px;
+            border: 1px solid var(--line-warm);
+        }
+        .btn-confirm { background: linear-gradient(135deg, #e26a8b, #d9466f); }
+        .cloud-login-btn {
+            background: linear-gradient(135deg, #f472b6, #d9466f);
+            box-shadow: 0 8px 20px -8px rgba(217, 70, 111, 0.5);
+        }
+        .cloud-login-btn:hover { background: linear-gradient(135deg, #f472b6, #db527a); }
+
+        /* ---- 页面切换：轻烟入场 ---- */
+        @keyframes pageIn {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: none; }
+        }
+        .page.active { animation: pageIn 0.5s cubic-bezier(0.22, 0.9, 0.32, 1) both; }
+
+        /* ---- v2.2 夜间模式陪伴调整 ---- */
+        body.night {
+            background-image:
+                radial-gradient(1100px 480px at 85% -140px, rgba(130, 62, 84, 0.16), transparent 62%),
+                radial-gradient(900px 440px at -10% 200px, rgba(96, 74, 52, 0.12), transparent 60%);
+        }
+        body.night .card { border-color: #382f29; }
+        body.night .tip-text { border-color: #4a3f36; background: rgba(255, 255, 255, 0.03); }
+        body.night .section-title::after { opacity: 0.5; }
+        body.night .form-input:focus { border-color: #8a5a68; box-shadow: 0 0 0 4px rgba(217, 70, 111, 0.14); }
+        body.night .popup { background: linear-gradient(180deg, #2b2522, #262020); }
+        body.night .popup::before { opacity: 0.65; }
+        body.night .mask { background: rgba(10, 8, 8, 0.62); }
+        body.night ::-webkit-scrollbar-thumb { background: #4a3a3a; background-clip: padding-box; border: 2px solid transparent; }
+        body.night .treehole-item { background: #262020; border-color: #3a322c; }
+        body.night .record-filter { background: rgba(34, 29, 26, 0.8); border-color: #3a322c; }
+        body.night .countdown-card { background: linear-gradient(135deg, #2c2520, #241f1c); border-color: #443830; }
+        body.night .countdown-num { background: linear-gradient(135deg, #f0b56a, #dd8f3a); -webkit-background-clip: text; background-clip: text; }
+        body.night .countdown-card::before { background: linear-gradient(180deg, #8a6a45, #6f5436); }
+        body.night .liuren-box { background: linear-gradient(160deg, #2a241f, #241f1b); border-color: #443830; }
+        body.night .diary-date { background: rgba(217, 70, 111, 0.16); box-shadow: inset 0 0 0 1px rgba(217, 70, 111, 0.2); }
+        body.night .diary-item { border-color: #3a322c; }
+        body.night .coll-manage-panel, body.night .dream-search-box, body.night .result-box { border-color: #3a322c; }
+        body.night .image-upload-area { border-color: #4a3f38; }
+        body.night .sheet { border-color: #3a322c; }
+
+        /* ---- 减弱动态效果：关闭新增动画 ---- */
+        @media (prefers-reduced-motion: reduce) {
+            .page.active, .hero-banner::before { animation: none !important; }
+            .record-item, .diary-item, .dream-card, .btn-primary, .btn-outline, .filter-tag, .nav-btn { transition: none !important; }
+            .hero-collapse, .hero-collapse-inner, .hero-banner, .hero-btns .btn-primary, .hero-btns .btn-outline, .btn-ico { transition: none !important; }
+            html { scroll-behavior: auto; }
+        }
+
+        /* ============================================================
+           v2.3 琴键导航 · 渐变色钢琴键功能按钮
+           白键琴体 + 每键专属渐变，激活键沿用时段主题色并呈按压态；
+           窄屏时琴键行横向滑动，不再换行堆积
+           ============================================================ */
+        .tab-bar {
+            flex-wrap: nowrap;
+            justify-content: center; /* 琴键全部放得下时居中；溢出时由 .can-scroll 切回左对齐 */
+            align-items: flex-end;
+            gap: 6px;
+            padding: 16px 18px 0;
+            border-bottom: none;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-x: contain; /* 滑到尽头不连带整页左右回弹 */
+        }
+        .tab-bar::-webkit-scrollbar { display: none; }
+        /* 鼠标拖拽琴键行滚动（JS 挂 .dragging） */
+        .tab-bar.dragging { cursor: grabbing !important; user-select: none; }
+        .tab-bar.can-scroll { justify-content: flex-start; cursor: grab; }
+        .tab-bar::after { /* 琴键底座暗影 */
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 7px;
+            z-index: 2;
+            pointer-events: none;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.12));
+        }
+        .tab-item {
+            flex: 0 0 auto;
+            padding: 13px 22px 15px;
+            border-radius: 12px 12px 0 0;
+            border: 1px solid rgba(125, 105, 85, 0.14);
+            border-bottom: none;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, #f3eee6 100%);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.95),
+                inset -1px 0 0 rgba(120, 100, 80, 0.07),
+                0 -6px 14px -10px rgba(60, 40, 30, 0.3);
+            color: #6f6257;
+            transform-origin: bottom center;
+        }
+        .tab-item:hover {
+            background-position: 0 -6px;
+            transform: translateY(1px);
+            color: #54463c;
+        }
+        /* 每个琴键的专属渐变（随页面顺序形成一段柔和色带） */
+        .tab-item:nth-child(1) { background: linear-gradient(180deg, #fffdfd 0%, #fbe7ed 100%); } /* 首页 · 桃粉 */
+        .tab-item:nth-child(2) { background: linear-gradient(180deg, #fffdf9 0%, #faebd8 100%); } /* 小确幸 · 杏金 */
+        .tab-item:nth-child(3) { background: linear-gradient(180deg, #fcfdff 0%, #e2eaf5 100%); } /* 树洞 · 雾蓝 */
+        .tab-item:nth-child(4) { background: linear-gradient(180deg, #fefeff 0%, #ebe4f7 100%); } /* 日记 · 丁香紫 */
+        .tab-item:nth-child(5) { background: linear-gradient(180deg, #fffdf8 0%, #f8ead1 100%); } /* 倒数日 · 暖琥珀 */
+        .tab-item:nth-child(6) { background: linear-gradient(180deg, #fffcfd 0%, #f6dfeb 100%); } /* HRT · 樱粉 */
+        .tab-item:nth-child(7) { background: linear-gradient(180deg, #fffdf9 0%, #f3ebd6 100%); } /* 小六壬 · 沙金 */
+        .tab-item:nth-child(8) { background: linear-gradient(180deg, #fbfffd 0%, #ddeee6 100%); } /* 解梦 · 青薄荷 */
+        .tab-item:nth-child(9) { background: linear-gradient(180deg, #fdfdfc 0%, #e9e6e2 100%); } /* 设置 · 石墨 */
+        /* 按下的琴键：时段主题渐变 + 按压态 */
+        .tab-item.active {
+            background: var(--tag-active-bg, linear-gradient(180deg, #d9466f, #be185d));
+            color: var(--tag-active-text, #fff);
+            border-color: var(--tag-active-border, transparent);
+            box-shadow:
+                var(--tag-active-shadow, 0 2px 8px rgba(180, 130, 40, 0.4)),
+                inset 0 2px 5px rgba(0, 0, 0, 0.12),
+                inset 0 -2px 0 rgba(255, 255, 255, 0.25);
+            transform: translateY(2px);
+            padding-bottom: 13px;
+            font-weight: 600;
+        }
+        /* 窄屏：琴键行横向轻扫（两端渐隐由 JS 按滚动位置动态控制，画在外壳伪元素上不挡点击） */
+        @media (max-width: 700px) {
+            .tab-bar {
+                gap: 5px;
+                padding: 12px 12px 0;
+            }
+            .tab-item {
+                padding: 10px 16px 12px;
+                font-size: 14px;
+                border-radius: 10px 10px 0 0;
+            }
+            .tab-item.active { padding-bottom: 10px; }
+        }
+
+        /* ---- 主按钮：金色渐变钢琴键（带可按压键缘） ---- */
+        .btn-primary {
+            background: linear-gradient(180deg, #f0d49b 0%, #dcae6c 55%, #c99a5f 100%);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                inset 0 -2px 0 rgba(146, 105, 53, 0.35),
+                0 4px 0 #a87f4e,
+                0 12px 22px -10px rgba(120, 85, 40, 0.55);
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.03);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                inset 0 -2px 0 rgba(146, 105, 53, 0.35),
+                0 5px 0 #a87f4e,
+                0 14px 26px -10px rgba(120, 85, 40, 0.6);
+        }
+        .btn-primary:active {
+            transform: translateY(3px);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                inset 0 -1px 0 rgba(146, 105, 53, 0.35),
+                0 1px 0 #a87f4e,
+                0 5px 12px -8px rgba(120, 85, 40, 0.5);
+        }
+        .btn-outline:active { transform: translateY(1px); }
+
+        /* ---- v2.3 移动端整体适配（小屏细节） ---- */
+        @media (max-width: 480px) {
+            .top-nav { padding: 10px 14px; }
+            .nav-logo { font-size: 17px; letter-spacing: 1px; }
+            .nav-logo-icon { width: 30px; height: 30px; font-size: 15px; }
+            .hero-banner { padding: 42px 18px 48px; border-radius: 0 0 22px 22px; }
+            .hero-title { font-size: 30px; letter-spacing: 1.5px; }
+            .hero-desc { font-size: 14px; }
+            .hero-btns { flex-direction: column; align-items: stretch; gap: 10px; }
+            .hero-btns .btn-primary, .hero-btns .btn-outline { padding: 13px 24px; }
+            .container { padding: 22px 14px 48px; }
+            .card { padding: 20px 16px; border-radius: 20px; }
+            .section-title { font-size: 20px; }
+            .record-item { padding: 14px; }
+            .countdown-card { padding: 18px 14px; }
+            .popup { padding: 26px 20px; }
+        }
+        /* 触屏设备：关闭悬停浮起，按压反馈更跟手 */
+        @media (hover: none) {
+            .record-item:hover, .diary-item:hover, .dream-card:hover { transform: none; box-shadow: 0 1px 2px rgba(90, 66, 50, 0.04), 0 16px 40px -22px rgba(190, 120, 100, 0.20); }
+            .filter-tag:hover, .cap-tpl-chip:hover { transform: none; }
+        }
+
+        /* ============================================================
+           v2.4 灵动首屏 · 苹果式收合
+           切到其他页签时整个首屏（文案 + 两个按钮）顺滑收合至完全消失，
+           功能标签栏直达顶栏正下方；回到首页再舒展还原；箭头为 SVG 线性图标
+           ============================================================ */
+        .hero-btns .btn-primary, .hero-btns .btn-outline {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: transform 0.2s ease, box-shadow 0.25s ease, filter 0.2s ease,
+                padding 0.55s cubic-bezier(0.32, 0.72, 0, 1), font-size 0.55s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+        .btn-ico { width: 1.05em; height: 1.05em; flex: none; margin-top: -1px; transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1); }
+        .btn-primary:hover .btn-ico { transform: translateX(2px); }
+        .btn-outline:hover .btn-ico { transform: translateY(2px); }
+
+        .hero-collapse {
+            display: grid;
+            grid-template-rows: 1fr;
+            opacity: 1;
+            transition:
+                grid-template-rows 0.6s cubic-bezier(0.32, 0.72, 0, 1),
+                opacity 0.4s ease 0.05s;
+        }
+        .hero-collapse-inner {
+            min-height: 0;
+            overflow: hidden;
+            transition: transform 0.6s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+        .hero-banner { transition: padding 0.6s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.8s ease; }
+        body.hero-collapsed .hero-collapse { grid-template-rows: 0fr; opacity: 0; }
+        body.hero-collapsed .hero-collapse-inner { transform: translateY(-10px); }
+        /* 文案与按钮全部收起：内边距归零，首屏整体消失，标签栏直达顶栏正下方 */
+        body.hero-collapsed .hero-banner { padding-top: 0; padding-bottom: 0; }
+        /* 老浏览器不支持 0fr 收合动画时，退化为直接隐藏，避免首屏残留在非首页 */
+        @supports not (grid-template-rows: 0fr) {
+            body.hero-collapsed .hero-collapse { display: none; }
+        }
+
+        /* ============================================================
+           v2.5 体验修补
+           ============================================================ */
+        /* 页面上滑时琴键导航吸附在顶栏正下方，随时可切换 */
+        /* 吸顶位置由 JS 按顶栏视口真实底边实时校准（--tab-top，滚动时自愈），
+           窄屏/全面屏/字体换装后也严丝合缝；JS 不可用时退回 66px 估值 + 安全区 */
+        /* 外壳承载吸顶；两端渐隐用伪元素画在琴键之上但 pointer-events:none，绝不遮挡点击 */
+        .tab-shell {
+            position: sticky;
+            top: var(--tab-top, calc(66px + env(safe-area-inset-top, 0px)));
+            z-index: 90;
+        }
+        .tab-shell::before, .tab-shell::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 18px;
+            z-index: 2;
+            pointer-events: none;
+            background: var(--tagbar-bg, #fff);
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+        .tab-shell::before {
+            left: 0;
+            -webkit-mask-image: linear-gradient(90deg, #000, transparent);
+            mask-image: linear-gradient(90deg, #000, transparent);
+        }
+        .tab-shell::after {
+            right: 0;
+            -webkit-mask-image: linear-gradient(270deg, #000, transparent);
+            mask-image: linear-gradient(270deg, #000, transparent);
+        }
+        .tab-shell.fade-l::before { opacity: 1; }
+        .tab-shell.fade-r::after { opacity: 1; }
+        /* 登录弹窗：验证码按钮与输入框严格等高
+           （原先 align-items:stretch 会把按钮拉到"输入框高度+18px外边距"，变成细长条） */
+        .sms-row { margin-bottom: 18px; }
+        .sms-row .form-input { margin-bottom: 0; }
+        /* ===== 青涩湖面 · 动态波光背景 ===== */
+        #lakeBg {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
+    <!-- 动态湖水背景（青水映阳） -->
+    <canvas id="lakeBg" aria-hidden="true"></canvas>
     <!-- 顶部导航 -->
     <div class="top-nav">
         <div class="nav-logo">
@@ -1160,34 +1715,52 @@
             <span>美好生活</span>
         </div>
         <div class="nav-actions">
-            <a class="ui-switch" href="life2.html" title="切换到新版 UI">✦ 新版<span class="sw-ext"> UI</span></a>
+            <a class="ui-switch" href="life.html" title="切换到经典版 UI">✦ 经典版<span class="sw-ext"> UI</span></a>
             <button class="nav-btn" id="userBtn" onclick="userBtnClick()">登录</button>
         </div>
     </div>
     <!-- 首屏海报 -->
     <div class="hero-banner">
-        <div class="hero-title">把平凡的日子，<br>认真收藏。</div>
-        <div class="hero-desc" id="heroDesc">
-            生活不只是眼前的风景，<br>
-            还有那些值得细细品味的瞬间。<br>
-            愿你在忙碌的世界里，依然能遇见生活的温柔。
+        <div class="hero-collapse">
+            <div class="hero-collapse-inner">
+                <div class="hero-title">把平凡的日子，<br>认真收藏。</div>
+                <div class="hero-desc" id="heroDesc">
+                    生活不只是眼前的风景，<br>
+                    还有那些值得细细品味的瞬间。<br>
+                    愿你在忙碌的世界里，依然能遇见生活的温柔。
+                </div>
+            </div>
         </div>
-        <div class="hero-btns">
-            <button class="btn-primary" onclick="switchTab('photo')">记录小确幸 →</button>
-            <button class="btn-outline" onclick="switchTab('list')">查看小确幸 ↓</button>
+        <div class="hero-collapse hero-collapse-btns">
+            <div class="hero-collapse-inner">
+                <div class="hero-btns">
+                    <button class="btn-primary" onclick="switchTab('photo')">记录小确幸
+                        <!-- 临时去掉箭头
+                        <svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+                        -->
+                    </button>
+                    <button class="btn-outline" onclick="switchTab('list')">查看小确幸
+                        <!-- 临时去掉箭头
+                        <svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v15M6 13l6 6 6-6"/></svg>
+                        -->
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
-    <!-- 功能标签栏 -->
-    <div class="tab-bar">
-        <div class="tab-item active" data-tab="home" onclick="switchTab('home')">首页</div>
-        <div class="tab-item" data-tab="photo" onclick="switchTab('photo')">小确幸</div>
-        <div class="tab-item" data-tab="treehole" onclick="switchTab('treehole')">树洞</div>
-        <div class="tab-item" data-tab="diary" onclick="switchTab('diary')">日记</div>
-        <div class="tab-item" data-tab="countdown" onclick="switchTab('countdown')">倒数日</div>
-        <div class="tab-item" data-tab="hrt" onclick="switchTab('hrt')">HRT记录</div>
-        <div class="tab-item" data-tab="liuren" onclick="switchTab('liuren')">小六壬</div>
-        <div class="tab-item" data-tab="dream" onclick="switchTab('dream')">解梦</div>
-        <div class="tab-item" data-tab="settings" onclick="switchTab('settings')">设置</div>
+    <!-- 功能标签栏（外壳承载吸顶与两端渐隐，渐隐层不遮挡琴键点击） -->
+    <div class="tab-shell">
+        <div class="tab-bar">
+            <div class="tab-item active" data-tab="home" onclick="switchTab('home')">首页</div>
+            <div class="tab-item" data-tab="photo" onclick="switchTab('photo')">小确幸</div>
+            <div class="tab-item" data-tab="treehole" onclick="switchTab('treehole')">树洞</div>
+            <div class="tab-item" data-tab="diary" onclick="switchTab('diary')">日记</div>
+            <div class="tab-item" data-tab="countdown" onclick="switchTab('countdown')">倒数日</div>
+            <div class="tab-item" data-tab="hrt" onclick="switchTab('hrt')">HRT记录</div>
+            <div class="tab-item" data-tab="liuren" onclick="switchTab('liuren')">小六壬</div>
+            <div class="tab-item" data-tab="dream" onclick="switchTab('dream')">解梦</div>
+            <div class="tab-item" data-tab="settings" onclick="switchTab('settings')">设置</div>
+        </div>
     </div>
     <div class="container">
         <!-- 首页 -->
@@ -1202,14 +1775,14 @@
                 <h3 class="section-title" style="font-size:22px; margin-bottom:18px;">✨ 记录小确幸</h3>
                 
                 <label class="form-label">今日心情</label>
-                <div class="mood-selector" id="moodSelector">
-                    <div class="mood-tag active" data-mood="😊 开心" onclick="selectMood(this)">😊 开心</div>
-                    <div class="mood-tag" data-mood="🌤 平静" onclick="selectMood(this)">🌤 平静</div>
-                    <div class="mood-tag" data-mood="🥰 幸福" onclick="selectMood(this)">🥰 幸福</div>
-                    <div class="mood-tag" data-mood="😋 满足" onclick="selectMood(this)">😋 满足</div>
-                    <div class="mood-tag" data-mood="😌 治愈" onclick="selectMood(this)">😌 治愈</div>
-                    <div class="mood-tag" data-mood="🎉 惊喜" onclick="selectMood(this)">🎉 惊喜</div>
-                </div>
+                <select class="form-select" id="moodSelector" onchange="selectMood(this)">
+                    <option value="😊 开心" selected>😊 开心</option>
+                    <option value="🌤 平静">🌤 平静</option>
+                    <option value="🥰 幸福">🥰 幸福</option>
+                    <option value="😋 满足">😋 满足</option>
+                    <option value="😌 治愈">😌 治愈</option>
+                    <option value="🎉 惊喜">🎉 惊喜</option>
+                </select>
 
                 <div class="form-row">
                     <div>
@@ -1247,14 +1820,14 @@
                 <h3 class="section-title" style="font-size:22px; margin-bottom:18px;">🌧 树洞 · 把坏心情倒在这里</h3>
                 
                 <label class="form-label">此刻心情</label>
-                <div class="mood-selector" id="treeholeMoodSelector">
-                    <div class="mood-tag treehole-mood-tag active" data-mood="😢 难过" onclick="selectTreeholeMood(this)">😢 难过</div>
-                    <div class="mood-tag treehole-mood-tag" data-mood="😡 烦躁" onclick="selectTreeholeMood(this)">😡 烦躁</div>
-                    <div class="mood-tag treehole-mood-tag" data-mood="😫 疲惫" onclick="selectTreeholeMood(this)">😫 疲惫</div>
-                    <div class="mood-tag treehole-mood-tag" data-mood="😞 委屈" onclick="selectTreeholeMood(this)">😞 委屈</div>
-                    <div class="mood-tag treehole-mood-tag" data-mood="😔 失落" onclick="selectTreeholeMood(this)">😔 失落</div>
-                    <div class="mood-tag treehole-mood-tag" data-mood="😠 生气" onclick="selectTreeholeMood(this)">😠 生气</div>
-                </div>
+                <select class="form-select" id="treeholeMoodSelector" onchange="selectTreeholeMood(this)">
+                    <option value="😢 难过" selected>😢 难过</option>
+                    <option value="😡 烦躁">😡 烦躁</option>
+                    <option value="😫 疲惫">😫 疲惫</option>
+                    <option value="😞 委屈">😞 委屈</option>
+                    <option value="😔 失落">😔 失落</option>
+                    <option value="😠 生气">😠 生气</option>
+                </select>
 
                 <div class="form-row">
                     <div>
@@ -1390,8 +1963,12 @@
                     打开 HRT 记录工具 →
                 </button>
                 <p style="margin-top:14px; font-size:12px; color:#9ca3af;">
-                    <a href="https://mtf-hrt-03.netlify.app/" target="_blank" rel="noopener" style="color:#9ca3af; text-decoration:underline;">在线版</a>
+                    <a href="https://mtf-hrt-03.netlify.app/" target="_blank" rel="noopener" style="color:#9ca3af; text-decoration:underline;">Tracker 在线版</a>
                     · 数据保存在本机，两个应用互不影响
+                </p>
+                <p style="margin-top:8px; font-size:12px; color:#9ca3af;">
+                    <a href="https://mtf.rincatia.com" target="_blank" rel="noopener" style="color:#9ca3af; text-decoration:underline;">琳凯蒂亚官方HRT网站</a>
+                · 另一个MTF HRT记录姐妹网站，数据独立均不影响
                 </p>
             </div>
         </div>
@@ -1535,9 +2112,15 @@
             <div class="card">
                 <h3 class="section-title" style="font-size:22px; margin-bottom:10px;">关于</h3>
                 <div class="backup-desc" style="margin-bottom:0;">
-                    美好生活记录 · v2.1.0<br>
+                    美好生活记录 · v2.1.0 N<br>
                     所有数据仅保存在你的浏览器中，不会上传到任何服务器。<br><br>
                     <span style="color:#999; font-size:13px;">HRT 记录功能已跳转至独立工具站点；解梦、小六壬仅供民俗娱乐。</span>
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="section-title" style="font-size:22px; margin-bottom:10px;">鸣谢</h3>
+                <div class="backup-desc" style="margin-bottom:0;">
+                    感谢 <span style="color:var(--rose); font-weight:600;">Mucheng Shi</span> 与 <span style="color:var(--rose); font-weight:600;">Milky Tian</span> 对本项目的支持与贡献。
                 </div>
             </div>
         </div>
@@ -2465,10 +3048,8 @@ function markCloudDirty(name) {
     scheduleCloudPush();
 }
 // ========== 小确幸记录功能 ==========
-function selectMood(btn) {
-    document.querySelectorAll('#moodSelector .mood-tag').forEach(t => t.classList.remove('active'));
-    btn.classList.add('active');
-    selectedMood = btn.dataset.mood;
+function selectMood(sel) {
+    selectedMood = sel.value;
 }
 
 function handleImageSelect(e) {
@@ -2531,9 +3112,7 @@ function saveRecord() {
     tempImages = [];
     renderImagePreview();
     selectedMood = '😊 开心';
-    document.querySelectorAll('#moodSelector .mood-tag').forEach((t, i) => {
-        t.classList.toggle('active', i === 0);
-    });
+    document.getElementById('moodSelector').value = selectedMood;
     
     renderRecords();
     updateCategoryFilter();
@@ -2630,10 +3209,8 @@ function renderRecords() {
 }
 
 // ========== 树洞功能 ==========
-function selectTreeholeMood(btn) {
-    document.querySelectorAll('#treeholeMoodSelector .mood-tag').forEach(t => t.classList.remove('active'));
-    btn.classList.add('active');
-    selectedTreeholeMood = btn.dataset.mood;
+function selectTreeholeMood(sel) {
+    selectedTreeholeMood = sel.value;
 }
 
 function handleTreeholeImageSelect(e) {
@@ -2696,9 +3273,7 @@ function saveTreehole() {
     tempTreeholeImages = [];
     renderTreeholeImagePreview();
     selectedTreeholeMood = '😢 难过';
-    document.querySelectorAll('#treeholeMoodSelector .mood-tag').forEach((t, i) => {
-        t.classList.toggle('active', i === 0);
-    });
+    document.getElementById('treeholeMoodSelector').value = selectedTreeholeMood;
     
     renderTreeholes();
     updateTreeholeCategoryFilter();
@@ -3483,16 +4058,17 @@ var SFX = (function () {
     }
 
     // ---- 每页声场：同一套琴音，不同的房间（切换页签时渐变换装） ----
+    // 延迟均 <90ms：重复声与主音融合成"房间感"，而不是一声声清晰的回声
     var SCENES = {
-        home:      { t: 0.16, fb: 0.35, wet: 0.24 },  // 默认温暖房间
-        photo:     { t: 0.10, fb: 0.20, wet: 0.15 },  // 小确幸：清亮短混响
-        treehole:  { t: 0.32, fb: 0.52, wet: 0.38 },  // 树洞：空谷深回声
-        diary:     { t: 0.12, fb: 0.16, wet: 0.11 },  // 日记：浅浅的书房
-        countdown: { t: 0.18, fb: 0.30, wet: 0.22 },
-        hrt:       { t: 0.16, fb: 0.35, wet: 0.24 },
-        liuren:    { t: 0.26, fb: 0.45, wet: 0.32 },  // 小六壬：古琴共鸣
-        dream:     { t: 0.42, fb: 0.55, wet: 0.40 },  // 解梦：绵长梦境
-        settings:  { t: 0.16, fb: 0.35, wet: 0.24 }
+        home:      { t: 0.075, fb: 0.28, wet: 0.20 },  // 默认温暖房间
+        photo:     { t: 0.050, fb: 0.15, wet: 0.12 },  // 小确幸：清亮短混响
+        treehole:  { t: 0.110, fb: 0.35, wet: 0.26 },  // 树洞：略深的空谷余韵
+        diary:     { t: 0.060, fb: 0.12, wet: 0.09 },  // 日记：浅浅的书房
+        countdown: { t: 0.080, fb: 0.22, wet: 0.18 },
+        hrt:       { t: 0.075, fb: 0.28, wet: 0.20 },
+        liuren:    { t: 0.100, fb: 0.32, wet: 0.24 },  // 小六壬：古琴共鸣
+        dream:     { t: 0.130, fb: 0.38, wet: 0.28 },  // 解梦：绵长梦境
+        settings:  { t: 0.075, fb: 0.28, wet: 0.20 }
     };
     var curScene = 'home';
 
@@ -3515,13 +4091,15 @@ var SFX = (function () {
                 master = ctx.createGain();
                 master.gain.value = SET.vol / 100;
                 master.connect(comp); comp.connect(ctx.destination);
-                // 全局回声总线：所有琴音带一点温暖的房间回响
+                // 全局氛围总线：琴音带一点温暖的房间感（低通反馈，圆润不产生清晰回声）
                 delayIn = ctx.createGain();
                 dl = ctx.createDelay(1); dl.delayTime.value = SCENES.home.t;
+                var lpf = ctx.createBiquadFilter();
+                lpf.type = 'lowpass'; lpf.frequency.value = 2400; lpf.Q.value = 0.4;
                 fb = ctx.createGain(); fb.gain.value = SCENES.home.fb;
                 wet = ctx.createGain(); wet.gain.value = SCENES.home.wet;
                 master.connect(delayIn); delayIn.connect(dl);
-                dl.connect(fb); fb.connect(dl);  // 反馈回路：回声一层层荡开
+                dl.connect(lpf); lpf.connect(fb); fb.connect(dl);  // 反馈经低通：每次反射更暗更融，如房间混响
                 dl.connect(wet); wet.connect(comp);
             }
             if (ctx.state === 'suspended') ctx.resume();
@@ -3652,7 +4230,7 @@ var SFX = (function () {
         g.gain.setValueAtTime(vol, t0 + dur * 0.6);
         g.gain.exponentialRampToValueAtTime(0.0008, t0 + dur);
         o.connect(g); g.connect(master);
-        var es = ctx.createGain(); es.gain.value = 0.5;       // 额外回声：远处的应答
+        var es = ctx.createGain(); es.gain.value = 0.15;      // 轻微的空间应答（原 0.5 会形成清晰回声）
         g.connect(es); es.connect(delayIn);
         var b = noise(), bg = ctx.createGain(), bf = ctx.createBiquadFilter();
         bf.type = 'bandpass'; bf.frequency.value = f * 2; bf.Q.value = 1.1;
@@ -3832,7 +4410,7 @@ var SFX = (function () {
     'use strict';
 
     // 需要水波反馈的可交互元素
-    var RIPPLE_TARGETS = 'button, .tab-item, .mood-tag, .filter-tag, .login-tab, .sheet-item, .diary-coll-badge, .diary-chevron, .diary-head, .image-upload-area, .dream-hot-tags span, .switch-text span';
+    var RIPPLE_TARGETS = 'button, .tab-item, .filter-tag, .login-tab, .sheet-item, .diary-coll-badge, .diary-chevron, .diary-head, .image-upload-area, .dream-hot-tags span, .switch-text span';
 
     var REDUCED_MOTION = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var pressAnims = new WeakMap(); // 宿主 -> 按压/回弹动画
@@ -4180,6 +4758,8 @@ var SFX = (function () {
     }
     .sfx-set-row:last-of-type { border-bottom: none; }
     .sfx-set-label { font-size: 15px; color: #4b3f3a; }
+    /* 行内输入控件去掉全局 margin-bottom，否则 flex 居中时边框整体上浮 */
+    .sfx-set-row .form-input { margin-bottom: 0; }
     .sfx-set-sub { display: block; font-size: 12px; color: #b3a49c; margin-top: 2px; }
     .sfx-toggle {
         border: 1.5px solid #e8b4b8;
@@ -4560,7 +5140,7 @@ var SFX = (function () {
 
     /* ===== v2.1 键盘可达：焦点样式 ===== */
     a:focus-visible, button:focus-visible, [tabindex]:focus-visible,
-    .tab-item:focus-visible, .mood-tag:focus-visible, .filter-tag:focus-visible,
+    .tab-item:focus-visible, .filter-tag:focus-visible,
     .sheet-item:focus-visible, .dream-hot-tags span:focus-visible {
         outline: 2px solid #d9466f; outline-offset: 2px; border-radius: 8px;
     }
@@ -4586,8 +5166,6 @@ var SFX = (function () {
     body.night .record-text { color: #d9cbb8; }
     body.night .record-time { color: #8d7d6d !important; }
     body.night .record-meta { color: #a2917f; }
-    body.night .mood-tag { background: #2b2521; border-color: #453b34; color: #c9b8a3; }
-    body.night .mood-tag.active { background: #d9466f; border-color: #d9466f; color: #fff; }
     body.night .filter-tag { background: #2b2521; color: #b5a390; border-color: #453b34; }
     body.night .filter-tag.active { background: #d9466f; color: #fff; }
     body.night .btn-outline { background: rgba(217,70,111,0.08); color: #e8a0a8; border-color: #6a4a4a; }
@@ -4629,12 +5207,34 @@ var SFX = (function () {
     body.night .memory-shake { color: #8d7d6d; }
     body.night .hrt-load-tip { background: #262020; color: #a2917f; }
     body.night .treehole-mood { background: #2b2521; color: #c9b8a3; }
-    body.night .treehole-mood.active { background: #3a322c; color: #e8dcc8; border-color: #55483f; }
     body.night .treehole-category,
     body.night .record-category { background: #332b26; color: #c9b8a3; }
     body.night .diary-date { background: rgba(217,70,111,0.16); }
     body.night .diary-date-week { color: #c99aa8; }
     body.night .image-upload-area { background: rgba(255,255,255,0.04); border-color: #4a3f38; color: #a2917f; }
+
+    /* ===== v2.2 UI 焕新补充（组件级，与主样式块配套） ===== */
+    .cap-card {
+        border: 1px solid rgba(150, 110, 85, 0.16);
+        box-shadow: 0 12px 28px -18px rgba(140, 90, 60, 0.38);
+    }
+    .cap-card.ready-to-open { border-color: rgba(217, 110, 80, 0.35); }
+    .cap-days { font-family: var(--font-serif); }
+    .cap-open-btn {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 8px 20px -8px rgba(217, 70, 111, 0.5);
+    }
+    .cap-open-btn:hover { transform: translateY(-1px); }
+    .cap-open-btn:active { transform: scale(0.98); }
+    .sfx-toggle { box-shadow: 0 2px 8px -4px rgba(160, 110, 110, 0.3); transition: 0.2s; }
+    .sfx-toggle:hover { transform: translateY(-1px); }
+    .sfx-toggle.on { box-shadow: 0 3px 10px -3px rgba(217, 70, 111, 0.5); }
+    .memory-card { border: 1px solid rgba(190, 150, 110, 0.28); }
+    .cap-tpl-chip:hover { border-color: #e8a0a8; color: #d9466f; transform: translateY(-1px); }
+    body.night .cap-card { border-color: rgba(255, 255, 255, 0.08); }
+    body.night .cap-card.ready-to-open { border-color: rgba(240, 170, 130, 0.28); }
+    body.night .sfx-toggle { box-shadow: none; }
+    body.night .memory-card { border-color: rgba(255, 255, 255, 0.08); }
 
 </style>
 
@@ -5845,6 +6445,351 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && !/[?&]embe
         });
     })();
 }
+</script>
+
+<script>
+// v2.3 UI：窄屏琴键行滑动后，把激活的琴键滚进视野（纯视觉行为，不触碰任何数据与业务逻辑）
+// v2.6 增补：动态边缘渐隐 + 鼠标拖拽滚动 + 滚轮横滚，保证任何宽度下所有琴键都可达可点
+(function () {
+    var bar = document.querySelector('.tab-bar');
+    if (!bar) return;
+    function scrollable() { return bar.scrollWidth > bar.clientWidth + 1; }
+    function reveal(t) {
+        try {
+            if (scrollable() && t && t.scrollIntoView) {
+                t.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            }
+        } catch (e) {}
+    }
+
+    // ---- 动态边缘渐隐：哪侧还有内容就淡出哪侧，滚到头即恢复实色 ----
+    // 渐隐画在外壳 .tab-shell 的伪元素上（pointer-events:none），不会遮挡琴键点击
+    var shell = bar.parentElement;
+    function updFade() {
+        if (!shell) return;
+        var canL = false, canR = false;
+        if (scrollable()) {
+            var max = bar.scrollWidth - bar.clientWidth - 1;
+            canL = bar.scrollLeft > 2;
+            canR = bar.scrollLeft < max;
+        }
+        shell.classList.toggle('fade-l', canL);
+        shell.classList.toggle('fade-r', canR);
+    }
+    function updState() {
+        bar.classList.toggle('can-scroll', scrollable());
+        updFade();
+    }
+    bar.addEventListener('scroll', updFade, { passive: true });
+    addEventListener('resize', updState);
+    addEventListener('load', updState);
+    updState();
+    // 字体/图标晚加载会改变行宽，稍后再校准两次
+    setTimeout(updState, 300);
+    setTimeout(updState, 1200);
+
+    // ---- 鼠标拖拽滚动（桌面窄窗口无滚动条也能左右滑琴键） ----
+    var down = false, moved = false, sx = 0, sl = 0;
+    bar.addEventListener('pointerdown', function (e) {
+        if (e.pointerType !== 'mouse' || !scrollable()) return;
+        down = true; moved = false; sx = e.clientX; sl = bar.scrollLeft;
+        bar.classList.add('dragging');
+    });
+    addEventListener('pointermove', function (e) {
+        if (!down) return;
+        var dx = e.clientX - sx;
+        if (!moved && Math.abs(dx) > 4) moved = true;
+        if (moved) { bar.scrollLeft = sl - dx; e.preventDefault(); }
+    });
+    addEventListener('pointerup', function () {
+        if (!down) return;
+        down = false;
+        bar.classList.remove('dragging');
+        // 拖拽后松手，拦截这次误触点击，避免琴键被"顺带"激活
+        if (moved) {
+            bar.addEventListener('click', function stop(ev) {
+                ev.stopPropagation(); ev.preventDefault();
+                bar.removeEventListener('click', stop, true);
+            }, true);
+        }
+    });
+
+    // ---- 滚轮横滚：悬停琴键行时竖向滚轮变为左右滑键；行到尽头后放行给页面滚动，不设滚动陷阱 ----
+    bar.addEventListener('wheel', function (e) {
+        if (!scrollable()) return;
+        if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return; // 触控板横向手势交给原生
+        var max = bar.scrollWidth - bar.clientWidth;
+        var canGo = (e.deltaY > 0 && bar.scrollLeft < max - 1) || (e.deltaY < 0 && bar.scrollLeft > 0);
+        if (canGo) {
+            e.preventDefault();
+            bar.scrollLeft = Math.max(0, Math.min(bar.scrollLeft + e.deltaY, max));
+        }
+    }, { passive: false });
+
+    bar.addEventListener('click', function (e) {
+        var t = e.target && e.target.closest && e.target.closest('.tab-item');
+        if (t) reveal(t);
+    });
+    if (document.readyState === 'complete') {
+        var a = bar.querySelector('.tab-item.active');
+        if (a) reveal(a);
+    } else {
+        addEventListener('load', function () {
+            var a = bar.querySelector('.tab-item.active');
+            if (a) reveal(a);
+        });
+    }
+})();
+
+// v2.4 UI：切到非首页时整个首屏（文案+按钮）顺滑收合至消失、回到首页舒展还原（纯视觉动效，不触碰数据与业务逻辑）
+(function () {
+    function syncHero() {
+        var active = document.querySelector('.page.active');
+        var isHome = !!(active && active.id === 'page-home');
+        document.body.classList.toggle('hero-collapsed', !!(active && !isHome));
+    }
+    // 移动端适配：用顶栏在视口中的真实底边校准琴键栏吸顶线（自动涵盖安全区、缩放、字体换装、
+    // 系统字号放大等一切高度变化），并在滚动时自愈校正——任何机型都不会残留缝隙
+    var topNav = document.querySelector('.top-nav');
+    function syncTabTop() {
+        if (!topNav) return;
+        // 顶栏 sticky 于 top:0，其视口底边即吸顶分界线；向下取整再上叠 1px，
+        // 琴键外壳顶边藏进顶栏之下（顶栏不透明且 z-index 更高），任何取整误差都绝不露缝
+        var bottom = Math.floor(topNav.getBoundingClientRect().bottom) - 1;
+        if (bottom > 0) document.body.style.setProperty('--tab-top', bottom + 'px');
+    }
+    var tabTopQueued = false;
+    function queueTabTop() {
+        if (tabTopQueued) return;
+        tabTopQueued = true;
+        requestAnimationFrame(function () { tabTopQueued = false; syncTabTop(); });
+    }
+    syncTabTop();
+    addEventListener('load', syncTabTop);
+    addEventListener('resize', syncTabTop);
+    addEventListener('orientationchange', syncTabTop);
+    addEventListener('pageshow', syncTabTop); // 返回/前进缓存恢复时重测
+    addEventListener('scroll', queueTabTop, { passive: true }); // 滚动自愈校正
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncTabTop); // 字体加载完重测
+    if (window.ResizeObserver) {
+        try { new ResizeObserver(syncTabTop).observe(topNav); } catch (e) { }
+    }
+    var bar2 = document.querySelector('.tab-bar');
+    if (bar2) {
+        bar2.addEventListener('click', function (e) {
+            if (!e.target || !e.target.closest || !e.target.closest('.tab-item')) return;
+            syncHero();
+            // 切换页签时回到顶部，让收合动效完整呈现（苹果式连贯 morph）
+            if (window.scrollY > 40) {
+                try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (err) { window.scrollTo(0, 0); }
+            }
+        });
+    }
+    syncHero(); // 深链 ?tab=xxx 直达时也保持正确状态
+})();
+</script>
+<script>
+/* ===== 青涩湖面 · 动态波光背景（青水映阳） =====
+   分层绘制：湖色渐变 → 太阳光晕 → 漂浮柔光 → 层叠涟漪
+   → 太阳倒影光路 → 闪烁波光。低负载，页面隐藏时自动暂停。 */
+(function () {
+    var cv = document.getElementById('lakeBg');
+    if (!cv || !cv.getContext) return;
+    var ctx = cv.getContext('2d');
+    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var W = 0, H = 0, raf = 0, last = 0, t = 6;
+    var baseGrad = null, sunGrad = null, coreGrad = null;
+    var sunX = 0.78, sunY = 0.16;
+
+    /* 涟漪条带：y比例 / 振幅 / 波长 / 相位速度 / 亮度 */
+    var BANDS = [
+        { y: 0.30, amp: 6,  len: 190, sp: 0.16,  a: 0.22 },
+        { y: 0.40, amp: 8,  len: 240, sp: -0.13, a: 0.20 },
+        { y: 0.50, amp: 10, len: 300, sp: 0.10,  a: 0.18 },
+        { y: 0.60, amp: 12, len: 360, sp: -0.08, a: 0.17 },
+        { y: 0.72, amp: 14, len: 430, sp: 0.065, a: 0.16 },
+        { y: 0.84, amp: 16, len: 500, sp: -0.05, a: 0.15 },
+        { y: 0.94, amp: 18, len: 560, sp: 0.04,  a: 0.14 }
+    ];
+
+    /* 波光亮斑：集中在太阳倒影光路附近，越往下越散 */
+    var glints = [];
+    function seedGlints() {
+        glints = [];
+        var n = Math.round(Math.min(110, Math.max(45, W * H / 14000)));
+        for (var i = 0; i < n; i++) {
+            var gy = Math.random();
+            var spread = 0.05 + gy * 0.17;
+            var dx = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5 * spread;
+            glints.push({
+                x: sunX + dx,
+                y: 0.24 + gy * 0.74,
+                r: 0.5 + Math.random() * 2.1,
+                ph: Math.random() * Math.PI * 2,
+                sp: 0.5 + Math.random() * 1.5
+            });
+        }
+    }
+
+    function resize() {
+        var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+        W = window.innerWidth;
+        H = window.innerHeight;
+        cv.width = Math.max(1, Math.round(W * dpr));
+        cv.height = Math.max(1, Math.round(H * dpr));
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        /* 湖水底色：上浅青，下渐深，透出温润青涩感 */
+        baseGrad = ctx.createLinearGradient(0, 0, 0, H);
+        baseGrad.addColorStop(0, 'rgba(226,245,239,0.92)');
+        baseGrad.addColorStop(0.35, 'rgba(204,236,227,0.90)');
+        baseGrad.addColorStop(0.7, 'rgba(185,225,215,0.90)');
+        baseGrad.addColorStop(1, 'rgba(168,214,204,0.92)');
+
+        var sx = sunX * W, sy = sunY * H;
+        sunGrad = ctx.createRadialGradient(sx, sy, 0, sx, sy, Math.max(W, H) * 0.5);
+        sunGrad.addColorStop(0, 'rgba(255,241,205,0.85)');
+        sunGrad.addColorStop(0.25, 'rgba(255,236,190,0.38)');
+        sunGrad.addColorStop(1, 'rgba(255,236,190,0)');
+
+        coreGrad = ctx.createRadialGradient(sx, sy, 0, sx, sy, Math.max(W, H) * 0.13);
+        coreGrad.addColorStop(0, 'rgba(255,252,236,0.95)');
+        coreGrad.addColorStop(1, 'rgba(255,248,214,0)');
+
+        seedGlints();
+    }
+
+    function wavePath(yBase, amp, len, phase) {
+        ctx.beginPath();
+        var step = Math.max(18, W / 42);
+        for (var x = -step; x <= W + step; x += step) {
+            var y = yBase
+                + Math.sin(x / len + phase) * amp
+                + Math.sin(x / (len * 0.37) - phase * 1.7) * amp * 0.36;
+            if (x <= 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+    }
+
+    function drawFrame() {
+        ctx.clearRect(0, 0, W, H);
+
+        /* 1) 湖水底色 */
+        ctx.fillStyle = baseGrad;
+        ctx.fillRect(0, 0, W, H);
+
+        /* 2) 明阳光晕 */
+        ctx.fillStyle = sunGrad;
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = coreGrad;
+        ctx.fillRect(0, 0, W, H);
+
+        /* 3) 缓移的柔光（水面反光大块） */
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        for (var i = 0; i < 3; i++) {
+            var cy = H * (0.38 + i * 0.22) + Math.sin(t * 0.2 + i * 2.1) * 12;
+            var cx = W * (0.5 + 0.28 * Math.sin(t * (0.06 + i * 0.02) + i * 1.4));
+            var rw = W * (0.22 + i * 0.05);
+            var rh = 26 + i * 10;
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.scale(1, rh / rw);
+            var eg = ctx.createRadialGradient(0, 0, 0, 0, 0, rw);
+            eg.addColorStop(0, 'rgba(255,255,255,0.10)');
+            eg.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = eg;
+            ctx.beginPath();
+            ctx.arc(0, 0, rw, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+        ctx.restore();
+
+        /* 4) 层叠涟漪：亮线 + 深青影线，立体如微风拂湖 */
+        for (var b = 0; b < BANDS.length; b++) {
+            var bd = BANDS[b];
+            var yb = H * bd.y;
+            var ph = t * bd.sp * Math.PI * 2;
+            ctx.lineWidth = 1.6;
+            ctx.strokeStyle = 'rgba(255,255,255,' + bd.a + ')';
+            wavePath(yb, bd.amp, bd.len, ph);
+            ctx.stroke();
+            ctx.lineWidth = 1.2;
+            ctx.strokeStyle = 'rgba(96,158,146,' + (bd.a * 0.55).toFixed(3) + ')';
+            wavePath(yb + 3.5, bd.amp, bd.len, ph);
+            ctx.stroke();
+        }
+
+        /* 5) 太阳倒影光路：随波荡漾的横向碎光 */
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        var sxp = sunX * W;
+        var top = sunY * H + 26;
+        var rows = 30;
+        for (var r = 0; r < rows; r++) {
+            var p = r / (rows - 1);
+            var ry = top + (H - top) * Math.pow(p, 1.25);
+            var sway = Math.sin(t * 0.5 + r * 0.55) * (4 + r * 0.5);
+            var flick = 0.55 + 0.45 * Math.sin(t * (0.9 + r * 0.07) + r * 1.7);
+            var rw2 = (8 + r * (W * 0.0022)) * (0.6 + 0.4 * Math.sin(t * 1.3 + r * 2.3));
+            var alpha = Math.max(0, (0.34 - p * 0.24) * flick);
+            if (alpha < 0.02) continue;
+            ctx.fillStyle = 'rgba(255,244,205,' + alpha.toFixed(3) + ')';
+            ctx.fillRect(sxp + sway - rw2 / 2, ry, Math.max(6, rw2), 1.4 + r * 0.05);
+        }
+        ctx.restore();
+
+        /* 6) 闪烁波光亮斑 */
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        for (var g = 0; g < glints.length; g++) {
+            var s = glints[g];
+            var tw = Math.sin(t * s.sp + s.ph);
+            if (tw <= 0.2) continue;
+            var a2 = Math.pow(tw, 3) * 0.75;
+            ctx.fillStyle = 'rgba(255,250,225,' + a2.toFixed(3) + ')';
+            ctx.beginPath();
+            ctx.arc(
+                s.x * W + Math.sin(t * 0.35 + s.ph) * 6,
+                s.y * H + Math.sin(t * 0.5 + s.ph * 2) * 3,
+                s.r, 0, Math.PI * 2
+            );
+            ctx.fill();
+        }
+        ctx.restore();
+    }
+
+    function loop(ts) {
+        raf = 0;
+        if (!last) last = ts;
+        t += Math.min(0.05, (ts - last) / 1000);
+        last = ts;
+        drawFrame();
+        raf = requestAnimationFrame(loop);
+    }
+    function start() {
+        if (!raf && !document.hidden) raf = requestAnimationFrame(loop);
+    }
+    function stop() {
+        if (raf) { cancelAnimationFrame(raf); raf = 0; }
+        last = 0;
+    }
+
+    document.addEventListener('visibilitychange', function () {
+        if (document.hidden) stop(); else start();
+    });
+    window.addEventListener('resize', function () {
+        resize();
+        if (reduced) drawFrame();
+    });
+
+    resize();
+    if (reduced) {
+        drawFrame(); /* 减少动态：只画一帧静景 */
+    } else {
+        start();
+    }
+})();
 </script>
 </body>
 </html>
